@@ -7,4 +7,4 @@
 * processed data is in nw_data.rds
 
 ## A FAIRE
-- [ ] teh to do list
+- [ ] the to-do list
