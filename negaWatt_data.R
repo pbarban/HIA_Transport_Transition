@@ -30,6 +30,8 @@ nw_data = raw_data %>%
           value = as.numeric(value)) %>% 
   filter(year %in% c(2020:2050))
 
+saveRDS(nw_data, "nw_data.rds")
+
 
 
 
