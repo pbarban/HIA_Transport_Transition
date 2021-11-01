@@ -61,3 +61,16 @@ age_grp = function(age){
                    "-", as.numeric(post)-1)
   return(age_grp)
 }
+
+# Get life expectancy by year and sex
+life_exp = function(df, year,sexe, MR){
+  test = df %>% 
+    group_by(year,sexe) %>% 
+    arrange(year,sexe) %>% 
+    mutate(prop_alive = cumprod(1 - MR),
+           deaths =  -(prop_alive - lag(prop_alive)),
+           life_exp = age *deaths) %>% 
+    group_by(sexe, year) %>% 
+    summarise(life_exp = sum(life_exp, na.rm = T))
+  return(test)
+}
