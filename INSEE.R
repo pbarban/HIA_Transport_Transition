@@ -23,13 +23,31 @@ df = All_data %>%
   mutate(age_grp = age_grp(age),
          Mortality.rate = ifelse(Mortality.rate > 1, 1, Mortality.rate)) # Some MR are >1, not excatly sure why...
 
+life_exp = function(df, year,sexe, MR){
+test = df %>% 
+  group_by(year,sexe) %>% 
+  arrange(year,sexe) %>% 
+  mutate(prop_alive = cumprod(1 - MR),
+         deaths =  -(prop_alive - lag(prop_alive)),
+         life_exp = age *deaths) %>% 
+  group_by(sexe, year) %>% 
+  summarise(life_exp = sum(life_exp, na.rm = T)) 
+return(test)
+}
+
+
+life_exp(df, MR = Mortality.rate)
+
+
+
+
 
 #Life expectancy table 
 library(ggplot2)
 life_exp(df, year,sexe,  Mortality.rate) 
 
-%>% 
-  ggplot() + geom_Line(aes(x = year, y = life_exp, color = sexe))
+test %>% 
+  ggplot() + geom_line(aes(x = year, y = life_exp, group = sexe, color = sexe))
 
 
 
