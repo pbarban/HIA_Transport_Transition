@@ -16,4 +16,5 @@
 * Life Expectancy
 
 ## A FAIRE
-- [ ] the to-do list
+- [ ] Data population per country
+- [ ] Create Denmark dataframe
