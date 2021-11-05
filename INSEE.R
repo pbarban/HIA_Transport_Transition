@@ -21,11 +21,11 @@ All_data = Pop.proj %>%
 df = All_data %>% 
   ungroup() %>% 
   mutate(age_grp = age_grp(age),
-         MR = ifelse(MR > 1 | pop == 0, 1, MR)) # Some MR are >1, not excatly sure why...
+         MR = ifelse(MR > 1 | pop == 0, 1, MR)) # Some MR are >1, not exactly sure why...
 
 #Life expectancy table 
 library(ggplot2)
-life_exp(df, year,sexe,  df)  %>% 
+life_exp(df, year,sexe,  MR)  %>% 
   ggplot() + 
   geom_line(aes(x = year, y = life_exp, group = sexe, color = sexe)) +
   theme(axis.text.x = element_text(angle = 90))
