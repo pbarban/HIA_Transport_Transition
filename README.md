@@ -10,5 +10,10 @@
 * Get INSEE projection scenarios
 * Create Life Expectancy table
 
+### Functions
+* Download INSEE scenarios
+* Ages categories
+* Life Expectancy
+
 ## A FAIRE
 - [ ] the to-do list
