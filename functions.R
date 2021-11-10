@@ -74,3 +74,25 @@ life_exp = function(df, year,sexe, MR){
     summarise(life_exp = sum(life_exp, na.rm = T))
   return(test)
 }
+
+# Get population demographic pyramid 
+pop_pyramid = function(country,year){
+   temp <-  tempfile()
+  
+  if(country == "Denmark"){
+    id = 208
+  }
+  else if(country == "Netherlands"){
+    id = 528
+  }
+  
+  dataURL = paste("https://www.populationpyramid.net/api/pp",id,year,"?csv=true", sep = "/") 
+  download.file(dataURL, destfile=temp, mode='wb')
+  data <- read.csv(temp)
+  
+  file.remove(temp)
+  return(data)
+}
+
+
+
