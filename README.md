@@ -10,6 +10,9 @@
 * Get INSEE projection scenarios
 * Create Life Expectancy table
 
+### Denmark data
+* Get population by age group in 2020
+
 ### Functions
 * Download INSEE scenarios
 * Ages categories
