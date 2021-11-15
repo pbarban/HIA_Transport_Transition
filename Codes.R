@@ -325,6 +325,10 @@ cycle_Ref_volume <- 100
 cycle_speed <- 14
 RR_cycle = 0.90
 
+vae_speed <-18  # valeur de Bouscasse et al
+MET_ratio <- 4.5/5.8# valeur de Bouscasse et al
+
+
 nW_walk$minutes = (60*nW_walk$value /walk_speed) / (365.25/7)
 nW_cycle$minutes = (60*nW_cycle$value /cycle_speed) / (365.25/7)
 
