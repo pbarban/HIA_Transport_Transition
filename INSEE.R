@@ -23,6 +23,20 @@ df = All_data %>%
   mutate(age_grp = age_grp(age),
          MR = ifelse(MR > 1 | pop == 0, 1, MR)) # Some MR are >1, not exactly sure why...
 
+#recalculate for both sexs
+df.both = df %>% filter(sexe == "Male") ; dim(df.both)
+df.both$sexe = "Both"
+head(df.both)
+df.both$pop = df.both$deaths = df.both$MR = 0
+df.both$pop = df$pop[df$sexe=="Male"] + df$pop[df$sexe=="Female"]
+df.both$deaths = df$deaths[df$sexe=="Male"] + df$deaths[df$sexe=="Female"]
+df.both$MR = df.both$deaths / df.both$pop
+df.both$MR[df.both$MR>1] = 1
+
+#concatene to df
+df = rbind(df, df.both)
+table(df$sexe)
+
 #Life expectancy table 
 library(ggplot2)
 life_exp(df, year,sexe,  MR)  %>% 
