@@ -31,24 +31,3 @@ Denmark_data = travel_rawdata %>%
   rename("age_grp" = "Age")
 
 rm(list=ls()[! ls() %in% c("Denmark_data")])
-
-### now need to expand to have all age years
-dan_av_year = data.frame(age = 15:84)
-dan_av_year$group = rep(3:16, each = 5)
-mm = match(dan_av_year$group, dan_av_both$AgeGroup)
-dan_av_year$prop_walk = dan_av_both$WalkLen_pers_day[mm]
-dan_av_year$rho_walk = dan_av_year$prop_walk/dan_av_year$prop_walk[1]
-
-dan_av_year$prop_cycle = dan_av_both$BicLen_pers_day[mm]
-dan_av_year$rho_cycle = dan_av_year$prop_cycle/ dan_av_year$prop_cycle[1]
-
-
-
-### now need to expand to have all age years
-vec_age = c(0:14, 85:99)
-tmp = cbind(vec_age,rep(0, length(vec_age)),  rep(0, length(vec_age)), rep(0, length(vec_age)), rep(0, length(vec_age)), rep(0, length(vec_age)) )
-colnames(tmp) = colnames(dan_av_year)
-dan_av_year = rbind(dan_av_year, tmp)
-rm(tmp)
-
-dan_av_year = dan_av_year[order(dan_av_year$age),]
