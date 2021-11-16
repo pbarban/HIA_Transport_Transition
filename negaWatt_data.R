@@ -3,7 +3,8 @@ pacman::p_load(readr,
                tidyr)
 
 raw_data <- read_csv(file = "nw_data.csv",
-                     col_names = c("type" ,paste0("year_",rep(2015:2050))))%>%
+                       show_col_types = FALSE,
+                       col_names = c("type" ,paste0("year_",rep(2015:2050))))%>%
   mutate(across(everything(), as.character)) 
 
 
@@ -30,10 +31,4 @@ nw_data = raw_data %>%
           value = as.numeric(value)) %>% 
   filter(year %in% c(2020:2050))
 
-saveRDS(nw_data, "nw_data.rds")
-
-
-
-
-
-
+rm(raw_data)
