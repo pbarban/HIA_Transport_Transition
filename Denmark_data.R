@@ -14,50 +14,23 @@ travel_rawdata = read.table(file = "distrib_Dan.txt", sep = ";", head=T, dec = "
   mutate(sexe = ifelse(RespSex == 1, "M", "F"),
          Age = age_grp(minRespAgeCorrect))
 
-all_data = travel_rawdata %>% 
+Denmark_data = travel_rawdata %>% 
   merge(pop, by = c("Age", "sexe")) %>% 
-  mutate(Bike_dist = BicLen_pers_day,
-         Walk_dist = WalkLen_pers_day) %>% 
-  select(Age, sexe, Bike_dist,Walk_dist, pop) %>% 
-  pivot_wider( names_from = sexe, values_from = c(pop, Bike_dist, Walk_dist)) %>% 
-  rowwise() %>% 
-  mutate(Bike_dist_Both = sum(across(starts_with("Bike"))),
-         Walk_dist_Both = sum(across(starts_with("Walk"))),
-         pop_Both = sum(across(starts_with("pop")))) %>% 
-  pivot_longer(!Age) %>% 
- mutate( sexe = sub("[^.]*\\_", "", name),
-         type = sub("_[^_]*$", "", name)) %>% 
-  mutate(age_grp = Age) %>% 
-  select(-c(name, Age)) %>% 
-  pivot_wider(values_from = value, names_from = type) %>% 
+  mutate(cycling = BicLen_pers_day,
+         walking = WalkLen_pers_day) %>% 
+  select(Age, sexe, cycling,walking, pop) %>%
+  group_by(Age) %>% 
+  bind_rows(summarise(.,
+                      across(pop, sum),
+                      across(cycling:walking, mean),
+                      across(where(is.character), ~"Both"))) %>% 
+  pivot_longer(c(cycling,walking),names_to = "mode", values_to = "distance") %>% 
   mutate(sexe = case_when(sexe == "F" ~ "Women",
                           sexe == "M" ~ "Men",
-                          TRUE ~ as.character(sexe) ))
-  
-  
-  
-### To continue
+                          TRUE ~ as.character(sexe) )) %>% 
+  rename("age_grp" = "Age")
 
-dan = merge(x = dan16, y=pyr_piv, by=c("AgeGroup", "sex"))
-dan = dan[order(dan$AgeGroup),]
-
-dan_totF =sum(dan$pop[dan$sex=="F"]); dan_totF
-dan_totM =sum(dan$pop[dan$sex=="M"]); dan_totM
-
-danF = dan %>% filter(sex == "F"); dim(danF)
-danM = dan %>% filter(sex == "M"); dim(danM)
-
-
-#average men and women
-dan_av = danF  # just copy the form
-dan_av$WalkLen_pers_day = dan_av$BicLen_pers_day = dan_av$pop = 0  
-dan_av$sex = "Both"
-dan_av$pop = danF$pop + danM$pop
-dan_av$WalkLen_pers_day = (danF$WalkLen_pers_day*danF$pop + danM$WalkLen_pers_day*danM$pop)/(danF$pop+danM$pop) #moyenne homme femme pondérée
-dan_av$BicLen_pers_day = (danF$BicLen_pers_day*danF$pop + danM$BicLen_pers_day*danM$pop)/(danF$pop+danM$pop)
-
-colnames(dan_av)
-dan_av_both = dan_av %>% select(AgeGroup, WalkLen_pers_day, BicLen_pers_day, pop); dim(dan_av_both)
+rm(list=ls()[! ls() %in% c("Denmark_data")])
 
 ### now need to expand to have all age years
 dan_av_year = data.frame(age = 15:84)
