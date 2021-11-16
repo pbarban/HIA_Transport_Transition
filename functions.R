@@ -89,7 +89,7 @@ age_grp = function(age){
 }
 
 # Get life expectancy by year and sex
-life_exp = function(df, year,sexe, MR, ){
+life_exp = function(df, year,sexe, MR ){
   test = df %>% 
     group_by(year,sexe) %>% 
     arrange(year,sexe) %>% 
