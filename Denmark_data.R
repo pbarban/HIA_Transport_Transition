@@ -30,4 +30,3 @@ Denmark_data = travel_rawdata %>%
                           TRUE ~ as.character(sexe) )) %>% 
   rename("age_grp" = "Age")
 
-rm(list=ls()[! ls() %in% c("Denmark_data")])
