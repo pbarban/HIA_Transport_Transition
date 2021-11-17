@@ -120,5 +120,25 @@ pop_pyramid = function(country,year){
   return(data)
 }
 
+# Disaggregate discrete age categories in dataframe into continuous age
 
+disaggregate_age = function(df, age_grp){
+  
+  age = df %>% 
+    group_by(age_grp) %>% 
+    select(age_grp) %>%
+    distinct() %>% 
+    mutate(pre = as.numeric(sub("\\-.*", "", age_grp)),
+           post = as.numeric(sub(".*\\-", "", age_grp)),
+           diff = post - pre) %>% 
+    slice(rep(row_number(), diff +1))  %>% 
+    mutate(n = row_number() - 1,
+           age = pre + n) %>% 
+    select(age_grp, age)
+  
+  df = df %>% 
+    merge(age, by = "age_grp")
+  
+  return(df)
+}
 

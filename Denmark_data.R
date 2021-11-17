@@ -28,5 +28,20 @@ Denmark_data = travel_rawdata %>%
   mutate(sexe = case_when(sexe == "F" ~ "Women",
                           sexe == "M" ~ "Men",
                           TRUE ~ as.character(sexe) )) %>% 
-  rename("age_grp" = "Age")
+  rename("age_grp" = "Age") %>% 
+  disaggregate_age( age_grp) %>% 
+  group_by(age_grp, sexe, mode) %>% 
+  mutate(pop = round(pop/n() )) %>%  #equally partition groups' pop to all ages
+  ungroup() %>% 
+  select(age,sexe, pop, mode, distance)
+
+rm(pop, travel_rawdata)
+
+
+
+
+
+
+
+
 

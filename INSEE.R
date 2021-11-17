@@ -18,14 +18,10 @@ All_data = Pop.proj %>%
   mutate(deaths = na_kalman(deaths, model = "auto.arima")) %>%  # Estimate nbr of deaths in 2050
   mutate(MR = deaths/pop)
 
-df = All_data %>% 
+INSEE_data = All_data %>% 
   ungroup() %>% 
   mutate(age_grp = age_grp(age),
          MR = ifelse(MR > 1 | pop == 0, 1, MR)) # Some MR are >1, not exactly sure why...
 
-#Life expectancy table 
-library(ggplot2)
-life_exp(df, year,sexe,  MR)  %>% 
-  ggplot() + 
-  geom_line(aes(x = year, y = life_exp, group = sexe, color = sexe)) +
-  theme(axis.text.x = element_text(angle = 90))
+rm(Pop.proj, Mortality.rate, All_data)
+
