@@ -32,10 +32,6 @@ INSEE_data = INSEE_data %>% filter(age<101)
 INSEE_data = INSEE_data %>% group_by(sexe, year) %>% mutate(pop_tot_year = sum(pop)) 
 INSEE_data = mutate(INSEE_data, p_prop = pop/pop_tot_year)
 
-head(pop_tot)
-mm = match(Pop.proj.both$year, pop_tot$year); length(mm)
-Pop.proj.both$P_tot_year =  pop_tot$pop_tot_y[mm]
-Pop.proj.both$p_prop = Pop.proj.both$Pop/ Pop.proj.both$P_tot_year
 
 
 # calculate life expectancy
