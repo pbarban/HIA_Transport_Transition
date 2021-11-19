@@ -18,21 +18,25 @@ All_data = Pop.proj %>%
   mutate(deaths = na_kalman(deaths, model = "auto.arima")) %>%  # Estimate nbr of deaths in 2050
   mutate(MR = deaths/pop)
 
-INSEE_data = All_data %>% 
+INSEE_data =  All_data %>% 
   ungroup() %>% 
   mutate(age_grp = age_grp(age),
-         MR = ifelse(MR > 1 | pop == 0, 1, MR)) # Some MR are >1, not exactly sure why...
+         MR = ifelse(MR > 1 | pop == 0, 1, MR)) %>% # Some MR are >1, not exactly sure why...
+ filter(age<101) %>% # for simplicity, delete all ages >100
+  group_by(sexe, year) %>%
+  mutate(p_prop = pop/sum(pop)) %>% 
+  filter(sexe == "Both")
 
-
-# for simplicity, delete all ages >100
-INSEE_data = INSEE_data %>% filter(age<101)
-
-
-# add the p_prop variable, which gives you the proportion of an age to the whole pop on a specific year
-INSEE_data = INSEE_data %>% group_by(sexe, year) %>% mutate(pop_tot_year = sum(pop)) 
-INSEE_data = mutate(INSEE_data, p_prop = pop/pop_tot_year)
-
-
+INSEE_data %>% 
+  group_by(sexe, year) %>% 
+  summarise(MR = sum(deaths)) %>% 
+  ggplot() + 
+  geom_line(aes(x = year,
+                y = MR,
+                group = sexe,
+                color = sexe ))+
+  theme(axis.text.x = element_text(angle = 90))
+  
 
 # calculate life expectancy
 life_exp_tab = data.frame("year" = 2020:2050, "life_exp" = rep(NA, length(2020:2050)))
@@ -50,6 +54,8 @@ for (i in 1:nrow(life_exp_tab)){
   life_exp_tab$life_exp[i] = life_exp
 }
 plot(life_exp_tab$year, life_exp_tab$life_exp)
+
+#ajouter experence de vie esperance de vie - age = yll
 
 
 

@@ -2,9 +2,7 @@ pacman::p_load(readr,
                dplyr,
                tidyr)
 
-raw_data <- read_csv(file = "nw_data.csv",
-                       show_col_types = FALSE,
-                       col_names = c("type" ,paste0("year_",rep(2015:2050))))%>%
+raw_data <- read_csv(file = "nw_data.csv",show_col_types = FALSE, col_names = c("type" ,paste0("year_",rep(2015:2050)))) %>%
   mutate(across(everything(), as.character)) 
 
 
