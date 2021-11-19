@@ -38,10 +38,12 @@ Denmark_data = travel_rawdata %>%
 rm(pop, travel_rawdata)
 
 
+count(Denmark_data, sexe)
+count(Denmark_data, age)
+summary(Denmark_data$age)
 
 
-
-
-
-
-
+Denmark_data = Denmark_data  %>% 
+  group_by(sexe,mode) %>% 
+  mutate(rho = distance / distance[1]) %>% 
+  ungroup()
