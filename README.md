@@ -28,3 +28,4 @@
 ## A FAIRE
 - [x] Data population per country
 - [ ] Create Denmark dataframe
+- [ ] Fig 1 : Graphes de la distribution des km par tranche d’âge au cours du temps -> graphes de km/min annuels/hebdo parcourus par tranche d’âge en 2030, 2040, 2050, par tranches d’âge de 10 ans.
