@@ -24,3 +24,10 @@ dim(den)
 den$age = as.numeric(den$age)
 den = den %>% arrange(mode, age)
 #Pierre, n'hésite pas à déplacer et traduire en dplyr si tu souhaites
+
+
+#### merge nw_data and INSEE_data
+INSEE_data$year = as.numeric(INSEE_data$year)
+nw = select(INSEE_data, year, p_tot) %>% 
+  right_join(nw_data, by = "year") %>% 
+  mutate(total_km = p_tot*value)
