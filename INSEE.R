@@ -24,7 +24,8 @@ INSEE_data =  All_data %>%
          MR = ifelse(MR > 1 | pop == 0, 1, MR)) %>% # Some MR are >1, not exactly sure why...
  filter(age<101) %>% # for simplicity, delete all ages >100
   group_by(sexe, year) %>%
-  mutate(p_prop = pop/sum(pop)) %>% 
+  mutate(p_tot =sum(pop),
+        p_prop = pop/p_tot) %>% 
   filter(sexe == "Both")
 
 INSEE_data %>% 
