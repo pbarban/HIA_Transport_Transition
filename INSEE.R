@@ -26,7 +26,8 @@ INSEE_data =  All_data %>%
   group_by(sexe, year) %>%
   mutate(p_tot =sum(pop),
         p_prop = pop/p_tot) %>% 
-  filter(sexe == "Both")
+  filter(sexe == "Both") %>% 
+  ungroup()
 
 INSEE_data %>% 
   group_by(sexe, year) %>% 
