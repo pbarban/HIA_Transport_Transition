@@ -142,3 +142,13 @@ disaggregate_age = function(df, age_grp){
   return(df)
 }
 
+### Give the rho needed to get a ratio between groups 
+# Could be improved 
+## Dont forget to groub_by before 
+
+rho <- function(df,distance){
+  df <- df %>% 
+    mutate(rho = distance / first(distance))
+  return(df)
+}
+

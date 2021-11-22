@@ -32,20 +32,15 @@ Denmark_data = travel_rawdata %>%
   disaggregate_age( age_grp) %>% 
   group_by(age_grp, sexe, mode) %>% 
   mutate(pop = round(pop/n() )) %>%  #equally partition groups' pop to all ages
+  group_by(sexe, mode) %>% 
+  rho(distance) %>% #get the rho
   ungroup() %>% 
-  select(age,sexe, pop, mode, distance)
+  select(age,sexe, pop, mode, distance, rho)
 
 rm(pop, travel_rawdata)
 
-
-count(Denmark_data, sexe)
-count(Denmark_data, age)
-summary(Denmark_data$age)
-
-# calculate the rho term 
-Denmark_data = Denmark_data  %>% 
-  group_by(sexe,mode) %>% 
-  mutate(rho = distance / distance[1]) %>% 
-  ungroup()
+#count(Denmark_data, sexe)
+#count(Denmark_data, age)
+#summary(Denmark_data$age)
 
 
