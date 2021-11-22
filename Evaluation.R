@@ -24,7 +24,9 @@ dim(den)
 den$age = as.numeric(den$age)
 den = den %>% 
   arrange(mode, age) %>% 
-  rename(type = mode)
+  rename(type = mode) 
+den$type = gsub("cycling", "cycle", den$type)
+den$type = gsub("walking", "walk", den$type)
 #Pierre, n'hésite pas à déplacer et traduire en dplyr si tu souhaites
 
 
@@ -79,16 +81,20 @@ n_prev = function(data, RR, Ref_volume){
 }
 
 
-data = INSEE_data
-
+df_demo = INSEE_data
+df_acti = nw
+target_distri = den
+  
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of physical activity
+                           target_distri, # data frame with the target age-distribution of physical activity
                            type_eval = "cycle", 
                            RR = RR_cycle, 
                            Ref_volume = cycle_Ref_volume,
                            speed = cycle_speed){
   
   acti =  df_acti %>% filter(type == type_eval)
+  target = target_distri %>% filter(type == type_eval)
   
   if(type == "cycle"){
     nw_tab = nW_cycle
