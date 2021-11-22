@@ -66,7 +66,7 @@ nw = select(INSEE_data, year, p_tot) %>%
   rename(km_pp_y = value) %>% 
   mutate(total_km_y = p_tot*km_pp_y,
          speed = rep(c(walk_speed, cycle_speed, vae_speed), length.out = nrow(nw)),
-         min_pp_w = (60*km_pp_y /speed) / (365.25/7))  # weekly minutes
+         minute_pp_w = (60*km_pp_y /speed) / (365.25/7))  # weekly minutes
 
 
 
@@ -76,7 +76,7 @@ nw = select(INSEE_data, year, p_tot) %>%
 ###############################
 #############################################################################################
 n_prev = function(data, RR, Ref_volume){
-  res = (1-RR)*(data$min_pp_w/Ref_volume)*data$MR*data$pop
+  res = (1-RR)*(data$minute_pp_w/Ref_volume)*data$MR*data$pop
   return(res)
 }
 
@@ -96,49 +96,36 @@ impact_per_type = function(df_demo, # demographic data frame
   acti =  df_acti %>% filter(type == type_eval)
   target = target_distri %>% filter(type == type_eval)
   
-  if(type == "cycle"){
-    nw_tab = nW_cycle
-    rho_vec = dan_av_year$rho_cycle
-    
-  } else if(type == "walk"){
-    nw_tab = nW_walk
-    rho_vec = dan_av_year$rho_walk
-  }
-  
   ####### 
-  ##in S1, nW scenario, calculate the km per person
-  S1tab = data
-  S1tab$rho = rho_vec[match(S1tab$age, dan_av_year$age)]
-  S1tab$total_km = nw_tab$total_km[match(S1tab$year, nw_tab$Year)]
+  ##in S1, the scenario assessed, calculate the km_w per person
+  S1tab = df_demo
+  S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
   
   # creat sum(rho*pop) for each year
   tmp = S1tab %>% group_by(year) %>% 
-    mutate(rho_pop = rho*Pop) %>% 
+    mutate(rho_pop = rho*pop) %>% 
     summarise(sum_rho_pop = sum(rho_pop))
   S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-  S1tab$km_pp = S1tab$total_km*S1tab$rho/S1tab$sum_rho_pop
+  S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
   
-  # check = S1tab %>% group_by(year) %>% mutate(totkm_per_age = km_pp*Pop) %>%
-  # summarise(km_tot = sum(totkm_per_age))
-  # cbind(check$km_tot, nW_cycle$total_km[nW_cycle$Year>2019]) # ok !!
+  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /cycle_speed) / (365.25/7)
   
-  S1tab$minute_pp =  (60*S1tab$km_pp /cycle_speed) / (365.25/7)
-  
+  ####### 
   # create the reference scenario = 2020 volumes all along
-  ###### here : change 31 with the number of years. Start in 2021 instead ?
   S0tab = S1tab
   n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2020,])
-  S0tab$minute_pp = rep(S1tab$minute_pp[S1tab$year==2020], n_rep) 
+  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2020], n_rep) 
   
   ### calculated number prevented
   S1tab$n_prev = n_prev(S1tab, RR=RR, Ref_volume=Ref_volume)
-  S1tab$YLL = S1tab$n_prev*S1tab$YL_left
+  S1tab$yll_prev = S1tab$n_prev*S1tab$yll
   
   S0tab$n_prev = n_prev(S0tab, RR=RR, Ref_volume=Ref_volume)
-  S0tab$YLL = S0tab$n_prev*S1tab$YL_left
+  S0tab$yll_prev = S0tab$n_prev*S1tab$yll
   
   S1tab$n_prev_wo_S0 = S1tab$n_prev - S0tab$n_prev 
-  S1tab$YLL_wo_S0 = S1tab$YLL - S0tab$YLL 
+  S1tab$yll_prev_wo_S0 = S1tab$yll_prev - S0tab$yll_prev 
   
   li = list(S1 = S1tab, S0 = S0tab)
   return(li)
