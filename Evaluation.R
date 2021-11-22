@@ -103,13 +103,14 @@ impact_per_type = function(df_demo, # demographic data frame
   ####### 
   ##in S1, the scenario assessed, calculate the km_w per person
   S1tab = df_demo
+  S1tab = S1tab %>% arrange(year)
   S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
   S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
   
   # creat sum(rho*pop) for each year
   tmp = S1tab %>% group_by(year) %>% 
-    mutate(rho_pop = rho*pop) %>% 
-    summarise(sum_rho_pop = sum(rho_pop))
+    mutate(rho_pop = rho*pop,
+           sum_rho_pop = sum(rho_pop))
   S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
   S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
   
@@ -154,6 +155,7 @@ res_ecycle = impact_per_type(df_demo = INSEE_data,
                             RR = eCycle_RR, 
                             Ref_volume = eCycle_Ref_volume,
                             speed = eCycle_speed)
+
 
 tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
 tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
