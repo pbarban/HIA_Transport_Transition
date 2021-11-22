@@ -27,17 +27,18 @@ INSEE_data =  All_data %>%
   mutate(p_tot =sum(pop),
         p_prop = pop/p_tot) %>% 
   filter(sexe == "Both") %>% 
+  filter(year>2019)  %>% 
   ungroup()
 
-INSEE_data %>% 
-  group_by(sexe, year) %>% 
-  summarise(MR = sum(deaths)) %>% 
-  ggplot() + 
-  geom_line(aes(x = year,
-                y = MR,
-                group = sexe,
-                color = sexe ))+
-  theme(axis.text.x = element_text(angle = 90))
+# INSEE_data %>% 
+#   group_by(sexe, year) %>% 
+#   summarise(MR = sum(deaths)) %>% 
+#   ggplot() + 
+#   geom_line(aes(x = year,
+#                 y = MR,
+#                 group = sexe,
+#                 color = sexe ))+
+#   theme(axis.text.x = element_text(angle = 90))
   
 
 # calculate life expectancy
@@ -58,11 +59,11 @@ for (i in 1:nrow(life_exp_tab)){
 plot(life_exp_tab$year, life_exp_tab$life_exp)
 
 #ajouter experence de vie esperance de vie - age = yll
-
-
-
-
-INSEE_data = INSEE_data %>% mutate()
+dim(INSEE_data)
+m_year = match(INSEE_data$year, life_exp_tab$year); length(m_year)
+INSEE_data = INSEE_data %>% 
+  mutate(life_exp = life_exp_tab$life_exp[m_year],
+         yll = life_exp-age)
 
 
 
