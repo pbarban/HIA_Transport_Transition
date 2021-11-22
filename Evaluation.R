@@ -47,10 +47,10 @@ cycle_RR = 0.90
 
 # pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
 eCycle_Ref_volume <- 100
-eCycle_speed <-cycle_speed  # valeur de Bouscasse et al : 18
+eCycle_speed <-18  # valeur de Bouscasse et al : 18
 eCycle_RR = cycle_RR
-METeCycle_ratio <- 1# valeur de Bouscasse et al : 4.5/5.8
-
+METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 
 
 
@@ -114,7 +114,7 @@ impact_per_type = function(df_demo, # demographic data frame
   S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
   S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
   
-  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /cycle_speed) / (365.25/7)
+  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
   
   ####### 
   # create the reference scenario = 2020 volumes all along
