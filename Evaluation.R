@@ -39,15 +39,17 @@ den$type = gsub("walking", "walk", den$type)
 #############################################################################################
 walk_Ref_volume <- 168
 walk_speed <- 4.8
-RR_walk = 0.89
+walk_RR = 0.89
 
 cycle_Ref_volume <- 100
 cycle_speed <- 14
-RR_cycle = 0.90
+cycle_RR = 0.90
 
 # pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
-vae_speed <-cycle_speed  # valeur de Bouscasse et al : 18
-MET_ratio <- 1# valeur de Bouscasse et al : 4.5/5.8
+eCycle_Ref_volume <- 100
+eCycle_speed <-cycle_speed  # valeur de Bouscasse et al : 18
+eCycle_RR = cycle_RR
+METeCycle_ratio <- 1# valeur de Bouscasse et al : 4.5/5.8
 
 
 
@@ -80,21 +82,23 @@ n_prev = function(data, RR, Ref_volume){
   return(res)
 }
 
-
-df_demo = INSEE_data
-df_acti = nw
-target_distri = den
+# 
+# df_demo = INSEE_data
+# df_acti = nw
+# target_distri = den
   
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of physical activity
                            target_distri, # data frame with the target age-distribution of physical activity
                            type_eval = "cycle", 
-                           RR = RR_cycle, 
+                           RR = cycle_RR, 
                            Ref_volume = cycle_Ref_volume,
                            speed = cycle_speed){
   
   acti =  df_acti %>% filter(type == type_eval)
-  target = target_distri %>% filter(type == type_eval)
+  
+  type_target = ifelse(type_eval == "e_cycle" , "cycle", type_eval)# if e_bike, use the target distrib of classic bike
+  target = target_distri %>% filter(type == type_target)
   
   ####### 
   ##in S1, the scenario assessed, calculate the km_w per person
@@ -130,3 +134,27 @@ impact_per_type = function(df_demo, # demographic data frame
   li = list(S1 = S1tab, S0 = S0tab)
   return(li)
 }
+
+
+
+
+##### test
+res_cycle = impact_per_type(df_demo = INSEE_data,
+                            df_acti = nw,
+                            target_distri = den,
+                            type_eval = "cycle", 
+                            RR = cycle_RR, 
+                            Ref_volume = cycle_Ref_volume,
+                            speed = cycle_speed)
+
+res_ecycle = impact_per_type(df_demo = INSEE_data,
+                            df_acti = nw,
+                            target_distri = den,
+                            type_eval = "e_cycle", 
+                            RR = eCycle_RR, 
+                            Ref_volume = eCycle_Ref_volume,
+                            speed = eCycle_speed)
+
+tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
+tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
+  sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T) ; tot_cycle_eCycle
