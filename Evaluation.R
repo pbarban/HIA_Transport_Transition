@@ -57,6 +57,9 @@ eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 #############################################################################################
 
 #### merge nw_data and INSEE_data
+INSEE_data = INSEE_data %>% 
+  filter(sexe == "Both") # Filter by both, to fix at one point
+
 nw = select(INSEE_data, year, p_tot) %>% 
   right_join(nw_data, by = "year") %>% 
   rename(km_pp_y = value) %>% 
