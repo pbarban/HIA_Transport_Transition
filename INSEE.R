@@ -26,7 +26,7 @@ INSEE_data =  All_data %>%
   group_by(sexe, year) %>%
   mutate(p_tot =sum(pop),
         p_prop = pop/p_tot) %>% 
-  filter(year>2021) %>% 
+  filter(year>=2021) %>% 
   arrange(year,sexe) %>% 
   life_exp(MR,age) %>% 
   mutate(yll = life_exp - age,

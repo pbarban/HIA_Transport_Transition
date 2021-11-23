@@ -115,8 +115,8 @@ impact_per_type = function(df_demo, # demographic data frame
   ####### 
   # create the reference scenario = 2020 volumes all along
   S0tab = S1tab
-  n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2020,])
-  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2020], n_rep) 
+  n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2021,])
+  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2021], n_rep) 
   
   ### calculated number prevented
   S1tab$n_prev = n_prev(S1tab, RR=RR, Ref_volume=Ref_volume)
