@@ -1,8 +1,3 @@
-# Check if the packages that we need are installed
-pacman::p_load(ggplot2) 
-
-
-
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
@@ -62,12 +57,13 @@ eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 #############################################################################################
 
 #### merge nw_data and INSEE_data
-INSEE_data$year = as.numeric(INSEE_data$year)
 nw = select(INSEE_data, year, p_tot) %>% 
   right_join(nw_data, by = "year") %>% 
   rename(km_pp_y = value) %>% 
   mutate(total_km_y = p_tot*km_pp_y,
-         speed = rep(c(walk_speed, cycle_speed, vae_speed), length.out = nrow(nw)),
+         speed = case_when(type == "walk" ~ walk_speed,
+                           type == "cycle" ~ cycle_speed,
+                           type == "e_cycle" ~ eCycle_speed),
          minute_pp_w = (60*km_pp_y /speed) / (365.25/7))  # weekly minutes
 
 

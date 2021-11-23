@@ -91,8 +91,6 @@ age_grp = function(age){
 # Get life expectancy by year and sex
 life_exp = function(df, MR ,age){
   test = df %>% 
-    group_by(year,sexe) %>% 
-    arrange(year,sexe) %>% 
     mutate(prop_alive = cumprod(1 - MR),
            deaths =  -(prop_alive - lag(prop_alive)),
            life_exp = sum(age *deaths, na.rm = T)) 
