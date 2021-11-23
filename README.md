@@ -27,6 +27,7 @@
 
 ## A FAIRE
 - [x] Data population per country
-- [ ] Create Denmark dataframe
-- [ ] Dans le code INSEE, calculer life expectancy pour "Female", "Male", et "Both" (actuellement, on utilise >filter(INSEE_data, sexe=="Both), ligne 28 du code)
+- [x] Create Denmark dataframe
+- [x] Dans le code INSEE, calculer life expectancy pour "Female", "Male", et "Both" (actuellement, on utilise >filter(INSEE_data, sexe=="Both), ligne 28 du code)
 - [ ] Fig 1 : Graphes de la distribution des km par tranche d’âge au cours du temps -> graphes de km/min annuels/hebdo parcourus par tranche d’âge en 2030, 2040, 2050, par tranches d’âge de 10 ans.
+- [ ] Find common vocabulary
