@@ -159,3 +159,31 @@ res_ecycle = impact_per_type(df_demo = INSEE_data,
 tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
 tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
   sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T) ; tot_cycle_eCycle
+
+
+
+########################################
+##  graph evolution per age category  ##
+########################################
+res = res_cycle
+
+evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
+  
+  evo = data_frame(res$S1) %>% 
+    mutate(age_grp.FACTOR = cut( age, breaks = seq(0,150, by = 5), include.lowest = T, right = F), #gather by age group
+           age_grp = as.character(age_grp.FACTOR), 
+           age_grp = gsub("\\[|\\]|\\(|\\)", "", age_grp),
+           age_grp = gsub(",", "-", age_grp),
+           post = sub(".*-","",age_grp),
+           age_grp = sub("-.*", "", age_grp),
+           age_grp = paste0(age_grp,"-", as.numeric(post)-1),
+           order = as.numeric(substr(age_grp,1,regexpr("-",age_grp)-1))) %>% 
+    group_by(age_grp, order, year) %>% 
+    summarise(km_pp_y = mean(km_pp_y),
+              minute_pp_w = mean(minute_pp_w))
+  return(evo)
+}
+evo_test = evo_milage(res_cycle)
+y_vec = c(2021, 2030, 2040, 2050)
+evo_test_yy = evo_test[evo_test$year %in% y_vec, ]
+max(evo_test_yy$minute_pp_w)
