@@ -226,5 +226,29 @@ evo_cycle_years %>%
         legend.title = element_blank(),
         text = element_text(size = 15),
         axis.text.x = element_text(angle = 60, hjust=1))
+ggsave("Evo_cycling_volumes.png", plot = last_plot())
 
 
+evo_walk = evo_milage(res_walk)
+evo_walk_years = evo_walk[evo_walk$year %in% y_vec, ] %>% 
+  filter (order>14 & order<85) %>% 
+  ungroup()
+evo_walk_years$year = as.factor(evo_walk_years$year)
+
+
+#same with walking
+evo_walk_years %>%  
+  ggplot() + geom_bar(aes(age_grp,
+                          y = minute_pp_w,
+                          fill = year),
+                      stat = "identity",
+                      position = "dodge2", 
+                      width = 0.7) +
+  scale_y_continuous(name = "Weekly walking duration (minutes)")+
+  theme_minimal() +
+  xlab("Age group") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+ggsave("Evo_walking_volumes.png", plot = last_plot())
