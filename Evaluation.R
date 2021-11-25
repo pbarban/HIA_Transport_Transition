@@ -89,7 +89,7 @@ n_prev = function(data, RR, Ref_volume){
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of physical activity
                            target_distri, # data frame with the target age-distribution of physical activity
-                           type_eval = "cycle", 
+                           type_eval = "cycle", # has to be "walk", "cycle" or "e_cycle"
                            RR = cycle_RR, 
                            Ref_volume = cycle_Ref_volume,
                            speed = cycle_speed){
@@ -139,6 +139,15 @@ impact_per_type = function(df_demo, # demographic data frame
 
 
 ##### test
+res_walk = impact_per_type(df_demo = INSEE_data,
+                            df_acti = nw,
+                            target_distri = den,
+                            type_eval = "walk", 
+                            RR = walk_RR, 
+                            Ref_volume = walk_Ref_volume,
+                            speed = walk_speed)
+
+
 res_cycle = impact_per_type(df_demo = INSEE_data,
                             df_acti = nw,
                             target_distri = den,
@@ -155,11 +164,12 @@ res_ecycle = impact_per_type(df_demo = INSEE_data,
                             Ref_volume = eCycle_Ref_volume,
                             speed = eCycle_speed)
 
-
+tot_walk =sum(res_walk$S1$n_prev_wo_S0, na.rm = T); tot_walk
 tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
+tot_ecycle = sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T); tot_ecycle
 tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
   sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T) ; tot_cycle_eCycle
-
+tot_nw = tot_walk + tot_cycle + tot_ecycle; tot_nw
 
 
 ########################################
