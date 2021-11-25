@@ -1,3 +1,4 @@
+library(ggplot2)
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
@@ -204,9 +205,26 @@ evo_all_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_ecycle$minute_pp_w
 max(evo_all_cycle$minute_pp_w)
 
 y_vec = c(2021, 2030, 2040, 2050)
-evo_test_yy = evo_all_cycle[evo_all_cycle$year %in% y_vec, ] %>% 
-  filter (order>14 & order<85) 
-max(evo_test_yy$minute_pp_w)
+evo_cycle_years = evo_all_cycle[evo_all_cycle$year %in% y_vec, ] %>% 
+  filter (order>14 & order<85) %>% 
+  ungroup()
+max(evo_cycle_years$minute_pp_w)
+evo_cycle_years$year = as.factor(evo_cycle_years$year)
 
 # tracer histogram de l'évolution des temps parcourus
+evo_cycle_years %>%  
+  ggplot() + geom_bar(aes(age_grp,
+                        y = minute_pp_w,
+                        fill = year),
+                    stat = "identity",
+                    position = "dodge2", 
+                    width = 0.7) +
+  scale_y_continuous(name = "Weekly cycling duration (minutes)")+
+  theme_minimal() +
+  xlab("Age group") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+
 
