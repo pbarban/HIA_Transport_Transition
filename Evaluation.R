@@ -175,8 +175,6 @@ tot_nw = tot_walk + tot_cycle + tot_ecycle; tot_nw
 ########################################
 ##  graph evolution per age category  ##
 ########################################
-res = res_cycle
-
 evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
   
   evo = data_frame(res$S1) %>% 
@@ -193,7 +191,22 @@ evo_milage = function(res){ # res is a resultat table provided by the impact_per
               minute_pp_w = mean(minute_pp_w))
   return(evo)
 }
-evo_test = evo_milage(res_cycle)
+
+
+
+
+evo_cycle = evo_milage(res_cycle)
+evo_ecycle = evo_milage(res_ecycle)
+# pour représenter les évolutions, combiner vélo et VAE
+evo_all_cycle = evo_cycle
+evo_all_cycle$km_pp_y = evo_cycle$km_pp_y + evo_ecycle$km_pp_y
+evo_all_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_ecycle$minute_pp_w
+max(evo_all_cycle$minute_pp_w)
+
 y_vec = c(2021, 2030, 2040, 2050)
-evo_test_yy = evo_test[evo_test$year %in% y_vec, ]
+evo_test_yy = evo_all_cycle[evo_all_cycle$year %in% y_vec, ] %>% 
+  filter (order>14 & order<85) 
 max(evo_test_yy$minute_pp_w)
+
+# tracer histogram de l'évolution des temps parcourus
+
