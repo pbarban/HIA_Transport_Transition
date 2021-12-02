@@ -138,6 +138,63 @@ impact_per_type = function(df_demo, # demographic data frame
 
 
 
+####### now wrap up a function calculating the impact of all types of transport
+impact_all_types = function(df_demo, # demographic data frame
+                           df_acti, # data frame of physical activity
+                           target_distri, # data frame with the target age-distribution of physical activity
+                           cycle_RR = 0.90, 
+                           cycle_Ref_volume = 100,
+                           cycle_speed = 14,
+                           walk_RR = 0.89,
+                           walk_Ref_volume= 168,
+                           walk_speed=4.8,
+                           eCycle_RR= 0.9224138,
+                           eCycle_Ref_volume =100,
+                           eCycle_speed = 18){
+  
+  res_walk = impact_per_type(df_demo = df_demo,
+                               df_acti = df_acti,
+                               target_distri = target_distri,
+                               type_eval = "walk", 
+                               RR = walk_RR, 
+                               Ref_volume = walk_Ref_volume,
+                               speed = walk_speed)
+  
+  res_cycle = impact_per_type(df_demo = df_demo,
+                              df_acti = df_acti,
+                              target_distri = target_distri,
+                              type_eval = "cycle", 
+                              RR = cycle_RR, 
+                              Ref_volume = cycle_Ref_volume,
+                              speed = cycle_speed)
+  
+  res_ecycle = impact_per_type(df_demo = df_demo,
+                               df_acti = df_acti,
+                               target_distri = target_distri,
+                               type_eval = "e_cycle", 
+                               RR = eCycle_RR, 
+                               Ref_volume = eCycle_Ref_volume,
+                               speed = eCycle_speed)
+  
+  tot_S1tab = df_demo
+  tot_S1tab = tot_S1tab %>% arrange(year) 
+  tot_S0tab = tot_S1tab
+  
+  tot_S0tab = tot_S0tab %>% 
+    mutate(n_prev = res_walk$S0$n_prev + res_cycle$S0$n_prev + res_ecycle$S0$n_prev,
+           yll_prev = res_walk$S0$yll_prev + res_cycle$S0$yll_prev + res_ecycle$S0$yll_prev)
+  tot_S1tab = tot_S1tab %>% 
+    mutate(n_prev = res_walk$S1$n_prev + res_cycle$S1$n_prev + res_ecycle$S1$n_prev,
+           yll_prev = res_walk$S1$yll_prev + res_cycle$S1$yll_prev + res_ecycle$S1$yll_prev)
+  tot_S1tab = tot_S1tab %>% 
+    mutate(n_prev_wo_S0 = tot_S1tab$n_prev - tot_S0tab$n_prev,
+           yll_prev_wo_S0 = tot_S1tab$yll_prev- tot_S0tab$yll_prev)
+  
+  li = list(tot_S1 = tot_S1tab, tot_S0 = tot_S0tab)
+  return(li)
+
+}
+
 
 ##### test
 res_walk = impact_per_type(df_demo = INSEE_data,
@@ -171,6 +228,12 @@ tot_ecycle = sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T); tot_ecycle
 tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
   sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T) ; tot_cycle_eCycle
 tot_nw = tot_walk + tot_cycle + tot_ecycle; tot_nw
+
+
+tot_table = impact_all_types(df_demo = INSEE_data,
+                             df_acti = nw,
+                             target_distri = den)
+sum(tot_table$tot_S1$n_prev_wo_S0) # we find the same results as when doing each type separately, good !
 
 
 ########################################
