@@ -284,3 +284,38 @@ impact_all_types = function(df_demo, # demographic data frame
   return(li)
   
 }
+
+
+
+###############
+### calculate gain in life expectancy
+
+life.expectancy = function(tot_impact, # an object created by the function >impact_all_types()
+                           yy) # the year at which we want to calculate life expectancy
+{
+  # calculate life expectancy based on an output from >impact_all_types()
+  
+  dta = tot_impact$tot_S1 
+  dta$MR[dta$MR>1] = 1
+  dta$MR[dta$age==max(dta$age)] = 1
+  
+  # keep year yy only
+  tmp = dta%>%  filter(year == yy)
+  tmp = tmp[order(tmp$age),]
+  
+  tmp$MR.S1 =(tmp$MR*tmp$pop - tmp$n_prev_wo_S0)/tmp$pop  # recalculate mortality rates in scenario S1 by discounting deaths prevented
+  tmp$MR.S1[tmp$age==max(tmp$age)] = 1
+  
+  prop_alive_S0 = c(1, cumprod((1 - tmp$MR) ))
+  deaths_S0 <- -diff(prop_alive_S0)
+  life_exp_S0 = sum(deaths_S0 * 0:(max(tmp$age)) ) 
+  
+  prop_alive_S1 = c(1, cumprod((1 - tmp$MR.S1) ))
+  deaths_S1 <- -diff(prop_alive_S1)
+  life_exp_S1 = sum(deaths_S1 * 0:(max(tmp$age)) ) 
+  
+  diff_exp = life_exp_S1 - life_exp_S0
+  
+  return(data.frame("life_exp_S0" = life_exp_S0, "life_exp_S1"=life_exp_S1, "difference"=diff_exp))
+}
+

@@ -119,6 +119,16 @@ tot_table = impact_all_types(df_demo = INSEE_data,
 sum(tot_table$tot_S1$n_prev_wo_S0) # we find the same results as when doing each type separately, good !
 
 
+
+###############
+### calculate gain in life expectancy
+
+life.expectancy(tot_table, 2021)
+life.expectancy(tot_table, 2022)
+life.expectancy(tot_table, 2030)
+life.expectancy(tot_table, 2040)
+life.expectancy(tot_table, 2050)
+
 ########################################
 ##  graph evolution per age category  ##
 ########################################
