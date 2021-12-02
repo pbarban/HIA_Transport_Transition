@@ -78,6 +78,7 @@ nw = select(INSEE_data, year, p_tot) %>%
 ###############################
 #############################################################################################
 n_prev = function(data, RR, Ref_volume){
+  # calculate the number of death prevented based on a demo dataset, a RR and a Ref_volume
   res = (1-RR)*(data$minute_pp_w/Ref_volume)*data$MR*data$pop
   return(res)
 }
@@ -87,6 +88,7 @@ n_prev = function(data, RR, Ref_volume){
 # df_acti = nw
 # target_distri = den
   
+
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of physical activity
                            target_distri, # data frame with the target age-distribution of physical activity
@@ -94,6 +96,9 @@ impact_per_type = function(df_demo, # demographic data frame
                            RR = cycle_RR, 
                            Ref_volume = cycle_Ref_volume,
                            speed = cycle_speed){
+  # output a list with 2 demographic tables which calculate for each year and age the number of deaths prevented + yll
+  # for a specified transport type
+  # requirs a demographic dataset, a dataset of physical activity volumes and a target distribution of volumes
   
   acti =  df_acti %>% filter(type == type_eval)
   

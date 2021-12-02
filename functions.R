@@ -148,3 +148,139 @@ rho <- function(df,distance){
   return(df)
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+############################################################################################
+##############################################
+#### functions of the health impact assessement itself
+##############################################
+############################################################################################
+
+
+n_prev = function(data, RR, Ref_volume){
+  # calculate the number of death prevented based on a demo dataset, a RR and a Ref_volume
+  res = (1-RR)*(data$minute_pp_w/Ref_volume)*data$MR*data$pop
+  return(res)
+}
+
+
+impact_per_type = function(df_demo, # demographic data frame
+                           df_acti, # data frame of physical activity
+                           target_distri, # data frame with the target age-distribution of physical activity
+                           type_eval = "cycle", # has to be "walk", "cycle" or "e_cycle"
+                           RR = cycle_RR, 
+                           Ref_volume = cycle_Ref_volume,
+                           speed = cycle_speed){
+  # output a list with 2 demographic tables which calculate for each year and age the number of deaths prevented + yll
+  # for a specified transport type
+  # requirs a demographic dataset, a dataset of physical activity volumes and a target distribution of volumes
+  
+  acti =  df_acti %>% filter(type == type_eval)
+  
+  type_target = ifelse(type_eval == "e_cycle" , "cycle", type_eval)# if e_bike, use the target distrib of classic bike
+  target = target_distri %>% filter(type == type_target)
+  
+  ####### 
+  ##in S1, the scenario assessed, calculate the km_w per person
+  S1tab = df_demo
+  S1tab = S1tab %>% arrange(year)
+  S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
+  
+  # creat sum(rho*pop) for each year
+  tmp = S1tab %>% group_by(year) %>% 
+    mutate(rho_pop = rho*pop,
+           sum_rho_pop = sum(rho_pop))
+  S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+  S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
+  
+  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
+  
+  ####### 
+  # create the reference scenario = 2020 volumes all along
+  S0tab = S1tab
+  n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2021,])
+  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2021], n_rep) 
+  
+  ### calculated number prevented
+  S1tab$n_prev = n_prev(S1tab, RR=RR, Ref_volume=Ref_volume)
+  S1tab$yll_prev = S1tab$n_prev*S1tab$yll
+  
+  S0tab$n_prev = n_prev(S0tab, RR=RR, Ref_volume=Ref_volume)
+  S0tab$yll_prev = S0tab$n_prev*S1tab$yll
+  
+  S1tab$n_prev_wo_S0 = S1tab$n_prev - S0tab$n_prev 
+  S1tab$yll_prev_wo_S0 = S1tab$yll_prev - S0tab$yll_prev 
+  
+  li = list(S1 = S1tab, S0 = S0tab)
+  return(li)
+}
+
+
+
+####### now wrap up a function calculating the impact of all types of transport
+impact_all_types = function(df_demo, # demographic data frame
+                            df_acti, # data frame of physical activity
+                            target_distri, # data frame with the target age-distribution of physical activity
+                            cycle_RR = 0.90, 
+                            cycle_Ref_volume = 100,
+                            cycle_speed = 14,
+                            walk_RR = 0.89,
+                            walk_Ref_volume= 168,
+                            walk_speed=4.8,
+                            eCycle_RR= 0.9224138,
+                            eCycle_Ref_volume =100,
+                            eCycle_speed = 18){
+  
+  res_walk = impact_per_type(df_demo = df_demo,
+                             df_acti = df_acti,
+                             target_distri = target_distri,
+                             type_eval = "walk", 
+                             RR = walk_RR, 
+                             Ref_volume = walk_Ref_volume,
+                             speed = walk_speed)
+  
+  res_cycle = impact_per_type(df_demo = df_demo,
+                              df_acti = df_acti,
+                              target_distri = target_distri,
+                              type_eval = "cycle", 
+                              RR = cycle_RR, 
+                              Ref_volume = cycle_Ref_volume,
+                              speed = cycle_speed)
+  
+  res_ecycle = impact_per_type(df_demo = df_demo,
+                               df_acti = df_acti,
+                               target_distri = target_distri,
+                               type_eval = "e_cycle", 
+                               RR = eCycle_RR, 
+                               Ref_volume = eCycle_Ref_volume,
+                               speed = eCycle_speed)
+  
+  tot_S1tab = df_demo
+  tot_S1tab = tot_S1tab %>% arrange(year) 
+  tot_S0tab = tot_S1tab
+  
+  tot_S0tab = tot_S0tab %>% 
+    mutate(n_prev = res_walk$S0$n_prev + res_cycle$S0$n_prev + res_ecycle$S0$n_prev,
+           yll_prev = res_walk$S0$yll_prev + res_cycle$S0$yll_prev + res_ecycle$S0$yll_prev)
+  tot_S1tab = tot_S1tab %>% 
+    mutate(n_prev = res_walk$S1$n_prev + res_cycle$S1$n_prev + res_ecycle$S1$n_prev,
+           yll_prev = res_walk$S1$yll_prev + res_cycle$S1$yll_prev + res_ecycle$S1$yll_prev)
+  tot_S1tab = tot_S1tab %>% 
+    mutate(n_prev_wo_S0 = tot_S1tab$n_prev - tot_S0tab$n_prev,
+           yll_prev_wo_S0 = tot_S1tab$yll_prev- tot_S0tab$yll_prev)
+  
+  li = list(tot_S1 = tot_S1tab, tot_S0 = tot_S0tab)
+  return(li)
+  
+}
