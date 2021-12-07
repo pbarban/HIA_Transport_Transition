@@ -1,3 +1,4 @@
+library(ggplot2)
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
@@ -76,68 +77,22 @@ nw = select(INSEE_data, year, p_tot) %>%
 # prepare data
 ###############################
 #############################################################################################
-n_prev = function(data, RR, Ref_volume){
-  res = (1-RR)*(data$minute_pp_w/Ref_volume)*data$MR*data$pop
-  return(res)
-}
-
-# 
-# df_demo = INSEE_data
-# df_acti = nw
-# target_distri = den
-  
-impact_per_type = function(df_demo, # demographic data frame
-                           df_acti, # data frame of physical activity
-                           target_distri, # data frame with the target age-distribution of physical activity
-                           type_eval = "cycle", 
-                           RR = cycle_RR, 
-                           Ref_volume = cycle_Ref_volume,
-                           speed = cycle_speed){
-  
-  acti =  df_acti %>% filter(type == type_eval)
-  
-  type_target = ifelse(type_eval == "e_cycle" , "cycle", type_eval)# if e_bike, use the target distrib of classic bike
-  target = target_distri %>% filter(type == type_target)
-  
-  ####### 
-  ##in S1, the scenario assessed, calculate the km_w per person
-  S1tab = df_demo
-  S1tab = S1tab %>% arrange(year)
-  S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
-  S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
-  
-  # creat sum(rho*pop) for each year
-  tmp = S1tab %>% group_by(year) %>% 
-    mutate(rho_pop = rho*pop,
-           sum_rho_pop = sum(rho_pop))
-  S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-  S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
-  
-  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
-  
-  ####### 
-  # create the reference scenario = 2020 volumes all along
-  S0tab = S1tab
-  n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2021,])
-  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2021], n_rep) 
-  
-  ### calculated number prevented
-  S1tab$n_prev = n_prev(S1tab, RR=RR, Ref_volume=Ref_volume)
-  S1tab$yll_prev = S1tab$n_prev*S1tab$yll
-  
-  S0tab$n_prev = n_prev(S0tab, RR=RR, Ref_volume=Ref_volume)
-  S0tab$yll_prev = S0tab$n_prev*S1tab$yll
-  
-  S1tab$n_prev_wo_S0 = S1tab$n_prev - S0tab$n_prev 
-  S1tab$yll_prev_wo_S0 = S1tab$yll_prev - S0tab$yll_prev 
-  
-  li = list(S1 = S1tab, S0 = S0tab)
-  return(li)
-}
-
 
 
 ##### test
+res_walk = impact_per_type(df_demo = INSEE_data,
+                            df_acti = nw,
+                            target_distri = den,
+                            type_eval = "walk", 
+                            RR = walk_RR, 
+                            Ref_volume = walk_Ref_volume,
+                            speed = walk_speed)
+
+<<<<<<< HEAD
+##### test
+=======
+
+>>>>>>> 6019b4baa764d8fbbef1de4b7b1fb4b6ace2f943
 res_cycle = impact_per_type(df_demo = INSEE_data,
                             df_acti = nw,
                             target_distri = den,
@@ -154,7 +109,106 @@ res_ecycle = impact_per_type(df_demo = INSEE_data,
                             Ref_volume = eCycle_Ref_volume,
                             speed = eCycle_speed)
 
-
+tot_walk =sum(res_walk$S1$n_prev_wo_S0, na.rm = T); tot_walk
 tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
+tot_ecycle = sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T); tot_ecycle
 tot_cycle_eCycle =  sum(res_cycle$S1$n_prev_wo_S0, na.rm = T) +
   sum(res_ecycle$S1$n_prev_wo_S0, na.rm = T) ; tot_cycle_eCycle
+tot_nw = tot_walk + tot_cycle + tot_ecycle; tot_nw
+
+
+tot_table = impact_all_types(df_demo = INSEE_data,
+                             df_acti = nw,
+                             target_distri = den)
+sum(tot_table$tot_S1$n_prev_wo_S0) # we find the same results as when doing each type separately, good !
+
+
+
+###############
+### calculate gain in life expectancy
+
+life.expectancy(tot_table, 2021)
+life.expectancy(tot_table, 2022)
+life.expectancy(tot_table, 2030)
+life.expectancy(tot_table, 2040)
+life.expectancy(tot_table, 2050)
+
+########################################
+##  graph evolution per age category  ##
+########################################
+evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
+  
+  evo = data_frame(res$S1) %>% 
+    mutate(age_grp.FACTOR = cut( age, breaks = seq(0,150, by = 5), include.lowest = T, right = F), #gather by age group
+           age_grp = as.character(age_grp.FACTOR), 
+           age_grp = gsub("\\[|\\]|\\(|\\)", "", age_grp),
+           age_grp = gsub(",", "-", age_grp),
+           post = sub(".*-","",age_grp),
+           age_grp = sub("-.*", "", age_grp),
+           age_grp = paste0(age_grp,"-", as.numeric(post)-1),
+           order = as.numeric(substr(age_grp,1,regexpr("-",age_grp)-1))) %>% 
+    group_by(age_grp, order, year) %>% 
+    summarise(km_pp_y = mean(km_pp_y),
+              minute_pp_w = mean(minute_pp_w))
+  return(evo)
+}
+
+
+
+
+evo_cycle = evo_milage(res_cycle)
+evo_ecycle = evo_milage(res_ecycle)
+# pour représenter les évolutions, combiner vélo et VAE
+evo_all_cycle = evo_cycle
+evo_all_cycle$km_pp_y = evo_cycle$km_pp_y + evo_ecycle$km_pp_y
+evo_all_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_ecycle$minute_pp_w
+max(evo_all_cycle$minute_pp_w)
+
+y_vec = c(2021, 2030, 2040, 2050)
+evo_cycle_years = evo_all_cycle[evo_all_cycle$year %in% y_vec, ] %>% 
+  filter (order>14 & order<85) %>% 
+  ungroup()
+max(evo_cycle_years$minute_pp_w)
+evo_cycle_years$year = as.factor(evo_cycle_years$year)
+
+# tracer histogram de l'évolution des temps parcourus
+evo_cycle_years %>%  
+  ggplot() + geom_bar(aes(age_grp,
+                        y = minute_pp_w,
+                        fill = year),
+                    stat = "identity",
+                    position = "dodge2", 
+                    width = 0.7) +
+  scale_y_continuous(name = "Weekly cycling duration (minutes)")+
+  theme_minimal() +
+  xlab("Age group") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+ggsave("Evo_cycling_volumes.png", plot = last_plot())
+
+
+evo_walk = evo_milage(res_walk)
+evo_walk_years = evo_walk[evo_walk$year %in% y_vec, ] %>% 
+  filter (order>14 & order<85) %>% 
+  ungroup()
+evo_walk_years$year = as.factor(evo_walk_years$year)
+
+
+#same with walking
+evo_walk_years %>%  
+  ggplot() + geom_bar(aes(age_grp,
+                          y = minute_pp_w,
+                          fill = year),
+                      stat = "identity",
+                      position = "dodge2", 
+                      width = 0.7) +
+  scale_y_continuous(name = "Weekly walking duration (minutes)")+
+  theme_minimal() +
+  xlab("Age group") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+ggsave("Evo_walking_volumes.png", plot = last_plot())
