@@ -137,7 +137,6 @@ impact_per_type = function(df_demo, # demographic data frame
 
 
 
-
 ##### test
 res_cycle = impact_per_type(df_demo = INSEE_data,
                             df_acti = nw,
