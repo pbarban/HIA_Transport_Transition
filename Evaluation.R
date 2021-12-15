@@ -4,6 +4,35 @@ source("INSEE.R")
 source("negaWatt_data.R")
 
 
+
+
+###### plot nW data
+str(nw_data)
+tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "Tot_cycle")
+nw_data = bind_rows(nw_data, tot_cycle_lines)
+
+new_rows = c(year = 2020:2050, type = rep("Tot_cycle", length(2020:2050), ))
+
+
+p1 = nw_data %>% 
+  ggplot() +  
+  geom_line(aes(x = year, y = value/52.1, group = type, color = type), size = 1)+
+  ylab("") +
+  xlab("") +
+  labs(title = "Trends in active transportation mileage, negaWatt scenario", subtitle = "In km/inhab/week") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 16),
+        plot.subtitle = element_text(colour = "#595a5c", size = 12),
+        legend.position="top",
+        axis.text=element_text(size=10),
+        axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
+  ylim(0, 13)
+
+plot(p1)
+
+
+
+
 #### First add lines corresponding to 0:14 and 85:100 in Denmark data
 dim(Denmark_data)
 den = Denmark_data %>% filter(sexe == "Both") ; dim(den)
