@@ -9,12 +9,10 @@ source("negaWatt_data.R")
 ###### plot nW data
 str(nw_data)
 tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "Tot_cycle")
-nw_data = bind_rows(nw_data, tot_cycle_lines)
-
-new_rows = c(year = 2020:2050, type = rep("Tot_cycle", length(2020:2050), ))
+nw_data2 = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
 
 
-p1 = nw_data %>% 
+p1 = nw_data2 %>% 
   ggplot() +  
   geom_line(aes(x = year, y = value/52.1, group = type, color = type), size = 1)+
   ylab("") +
