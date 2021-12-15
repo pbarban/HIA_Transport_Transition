@@ -14,7 +14,7 @@ nw_data2 = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
 
 p1 = nw_data2 %>% 
   ggplot() +  
-  geom_line(aes(x = year, y = value/52.1, group = type, color = type), size = 1)+
+  geom_line(aes(x = year, y = value/52.1, group = type, col = type, linetype=type), size = 1)+
   ylab("") +
   xlab("") +
   labs(title = "Trends in active transportation mileage, negaWatt scenario", subtitle = "In km/inhab/week") +
@@ -24,7 +24,8 @@ p1 = nw_data2 %>%
         legend.position="top",
         axis.text=element_text(size=10),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
-  ylim(0, 13)
+  scale_linetype_manual(values=c("dashed", "dashed","solid", "solid"))
+  #ylim(0, 18)
 
 plot(p1)
 
