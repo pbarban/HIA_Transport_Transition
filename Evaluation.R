@@ -12,6 +12,7 @@ tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% sum
 nw_data2 = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
 nw_data2$type <- factor(nw_data2$type, levels=c("walk","Tot_cycle","cycle", "e_cycle"), 
                         labels=c("Walk", "Total cycle","Bike", "e-Bike" ))
+# labels=c("Marche", "Total vélo","vélo", "VAE" ))
 
 p1 = nw_data2 %>% 
   ggplot() +  
@@ -19,11 +20,14 @@ p1 = nw_data2 %>%
   ylab("") +
   xlab("") +
   labs(title = "Trends in active transportation mileage, negaWatt scenario", subtitle = "In km/inhab/week") +
+ # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", size = 16),
         plot.subtitle = element_text(colour = "#595a5c", size = 12),
         legend.position="top",
-        axis.text=element_text(size=10),
+        legend.key.size = unit(1, 'cm'),
+        legend.text = element_text(size=12),
+        axis.text=element_text(size=12),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
   scale_linetype_manual(values=c("solid", "solid","dashed", "dashed"))+
   scale_color_manual(values=c("#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
