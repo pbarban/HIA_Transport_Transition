@@ -274,13 +274,17 @@ eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 tot_table = impact_all_types(df_demo = INSEE_data,
                              df_acti = nw,
                              target_distri = den)
+res_per_year = aggregate(tot_table$tot_S1$n_prev_wo_S0, by= list(tot_table$tot_S1$year), FUN = "sum")
+
+
 tot_table_low = impact_all_types(df_demo = INSEE_data,
                                  df_acti = nw,
                                  target_distri = den,
                                  walk_RR =RR_walk_low ,
                                  cycle_RR =RR_cycle_low,
                                  eCycle_RR = eCycle_RR_low)
-sum(tot_table_low$tot_S1$n_prev_wo_S0)
+# sum(tot_table_low$tot_S1$n_prev_wo_S0)
+# res_per_year_low = aggregate(tot_table_low$tot_S1$n_prev_wo_S0, by= list(tot_table$tot_S1$year), FUN = "sum")
 
 tot_table_sup = impact_all_types(df_demo = INSEE_data,
                                  df_acti = nw,
@@ -288,14 +292,39 @@ tot_table_sup = impact_all_types(df_demo = INSEE_data,
                                  walk_RR =RR_walk_sup ,
                                  cycle_RR =RR_cycle_sup,
                                  eCycle_RR = eCycle_RR_sup)
-sum(tot_table_sup$tot_S1$n_prev_wo_S0)
+# res_per_year_sup = aggregate(tot_table_low$tot_S1$n_prev_wo_S0, by= list(tot_table$tot_S1$year), FUN = "sum")
 
 
 
 
-s = ggplot(data=impact_tab, aes(x = year, y = n_prev_wo_S0)) +
-  geom_bar(stat = "identity")
+res_per_year =cbind(year = tot_table$tot_S1$year, 
+                    death_prev = tot_table$tot_S1$n_prev_wo_S0,
+                    death_prev_low = tot_table_low$tot_S1$n_prev_wo_S0,
+                    death_prev_sup = tot_table_sup$tot_S1$n_prev_wo_S0,
+                    yll = tot_table$tot_S1$yll_prev_wo_S0,
+                    yll_low = tot_table_low$tot_S1$yll_prev_wo_S0,
+                    yll_sup = tot_table_sup$tot_S1$yll_prev_wo_S0)
 
+res_per_year = as.data.frame(res_per_year) %>% 
+  group_by(year) %>% 
+  summarise(death_prev = sum(death_prev),
+            death_prev_low = sum(death_prev_low),
+            death_prev_sup =sum(death_prev_sup),
+            yll = sum(yll),
+            yll_low = sum(yll_low),
+            yll_sup = sum(yll_sup))
+
+            
+
+
+
+
+
+s = ggplot(data=res_per_year)+
+  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#08bcc4") +
+  geom_errorbar(aes(x = year,ymin = death_prev_low, ymax = death_prev_sup, width = 0.4)) +
+  theme_minimal()
+s
 
 ####################
 # impact per year
