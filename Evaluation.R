@@ -317,30 +317,25 @@ res_per_year = as.data.frame(res_per_year) %>%
             
 
 
-
-
-
-s = ggplot(data=res_per_year)+
-  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#08bcc4") +
+deathplot = ggplot(data=res_per_year)+
+  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#c2a5cf") +
+  ylab("Deaths prevented")+
+  xlab("")+
   geom_errorbar(aes(x = year,ymin = death_prev_low, ymax = death_prev_sup, width = 0.4)) +
   theme_minimal()
-s
+deathplot
 
-####################
-# impact per year
-####################
-death_prev_cycle_year = aggregate(res_cycle$S1$n_prev_wo_S0, by= list(res_cycle$S1$year), FUN = "sum")
-death_prev_cycle_year$Type = "Cycle"
-death_prev_walk_year = aggregate(res_walk$S1$n_prev_wo_S0, by= list(res_walk$S1$year), FUN = "sum")
-death_prev_walk_year$Type = "Walk"
+yll_plot = ggplot(data=res_per_year)+
+  geom_bar(aes(x = year, y = yll/1000),stat = "identity", fill="#a6dba0") +
+  ylab("YLL prevented (thousands)")+
+  xlab("Year")+
+  geom_errorbar(aes(x = year,ymin = yll_low/1000, ymax = yll_sup/1000, width = 0.4)) +
+  theme_minimal()
+yll_plot
 
-death_prev = rbind(death_prev_cycle_year, death_prev_walk_year)
-death_prev$Type = factor(death_prev$Type )
-colnames(death_prev) = c("year", "death_prev", "Type")
-death_prev$year = as.numeric(death_prev$year)
+impact_plot = ggarrange (deathplot, yll_plot, ncol = 1) 
+tiff("total impact per year.tiff", units="in", width = 5*1.4, height= 4.5*1.4, res=190)
+plot(impact_plot)
+dev.off()
 
-summary(death_prev)
-s = ggplot(data=death_prev, aes(x = year, y = death_prev, fill=Type)) +
-  geom_bar(stat = "identity")
 
-plot(s)
