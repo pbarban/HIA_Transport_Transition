@@ -17,9 +17,9 @@ nw_data2$type <- factor(nw_data2$type, levels=c("walk","Tot_cycle","cycle", "e_c
 p1 = nw_data2 %>% 
   ggplot() +  
   geom_line(aes(x = year, y = value/52.1, group = type, col = type, linetype=type, size= type))+
-  ylab("") +
+  ylab("km/inhab/week") +
   xlab("") +
-  labs(title = "Trends in active transportation mileage, negaWatt scenario", subtitle = "In km/inhab/week") +
+  labs(title = "Trends in active transportation mileage, negaWatt scenario") +
  # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", size = 16),
@@ -161,6 +161,7 @@ life.expectancy(tot_table, 2021)
 life.expectancy(tot_table, 2022)
 life.expectancy(tot_table, 2030)
 life.expectancy(tot_table, 2040)
+life.expectancy(tot_table, 2045)
 life.expectancy(tot_table, 2050)
 
 ########################################
