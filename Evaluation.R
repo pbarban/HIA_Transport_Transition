@@ -1,4 +1,5 @@
 library(ggplot2)
+library(ggpubr)
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
@@ -35,6 +36,9 @@ p1 = nw_data2 %>%
   
 plot(p1)
 
+tiff("Trends_mileage-SnW.tiff", units="in", width = 9*1.4, height= 5*1.4, res=190)
+plot(p1)
+dev.off()
 
 
 
@@ -185,9 +189,56 @@ evo_milage = function(res){ # res is a resultat table provided by the impact_per
 }
 
 
+plot_evo_milage = function(evo, y_vec = c(2021, 2030, 2040, 2050), age_low = 14, age_sup=84,
+                           scale_y_lab){
+  #evo is an output of the evo_milage() function
+  evo = evo[evo$year %in% y_vec, ] %>% 
+    filter (order>age_low & order<=age_sup) %>% 
+    ungroup()
+  evo$year = as.factor(evo$year)
+   pplot = evo %>%  
+    ggplot() + geom_bar(aes(age_grp,
+                            y = minute_pp_w,
+                            fill = year),
+                        stat = "identity",
+                        position = "dodge2", 
+                        width = 0.7) +
+    scale_y_continuous(name = scale_y_lab)+
+    theme_minimal() +
+    xlab("Age group") +
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          text = element_text(size = 15),
+          axis.text.x = element_text(angle = 60, hjust=1))
+   return(pplot)
+}
 
+y_vec_3 = c(2025, 2035, 2045)
+y_vec_6 = c(2025, 2030, 2035, 2040,2045, 2050)
+
+
+evo_walk = evo_milage(res_walk)
+p_evo_walk = plot_evo_milage(evo = evo_walk,y_vec = y_vec_3,
+                              scale_y_lab = "Weekly walking duration (minutes)")
 
 evo_cycle = evo_milage(res_cycle)
+p_evo_cycle = plot_evo_milage(evo = evo_cycle,y_vec = y_vec_3,
+                              scale_y_lab = "Weekly cycling duration (minutes)")
+
+evo_ecycle = evo_milage(res_ecycle)
+p_evo_ecycle = plot_evo_milage(evo = evo_ecycle, y_vec = y_vec_3,
+                              scale_y_lab = "Weekly e-cycling duration (minutes)")
+
+
+tot_cycle = 
+
+p_evo_walk
+p_evo_cycle
+p_evo_ecycle
+
+ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,
+          ncol = 1)
+
 evo_ecycle = evo_milage(res_ecycle)
 # pour représenter les évolutions, combiner vélo et VAE
 evo_all_cycle = evo_cycle
