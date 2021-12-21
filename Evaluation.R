@@ -255,3 +255,63 @@ tiff("evolution volumes per age.tiff", units="in", width = 5*1.4, height= 8*1.4,
 plot(p2)
 dev.off()
 
+
+
+##############################
+#### plot impact by year
+##############################
+RR_cycle_low = 0.94
+RR_cycle_sup = 0.87
+RR_walk_low = 0.96
+RR_walk_sup = 0.83
+
+METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
+eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
+
+
+
+tot_table = impact_all_types(df_demo = INSEE_data,
+                             df_acti = nw,
+                             target_distri = den)
+tot_table_low = impact_all_types(df_demo = INSEE_data,
+                                 df_acti = nw,
+                                 target_distri = den,
+                                 walk_RR =RR_walk_low ,
+                                 cycle_RR =RR_cycle_low,
+                                 eCycle_RR = eCycle_RR_low)
+sum(tot_table_low$tot_S1$n_prev_wo_S0)
+
+tot_table_sup = impact_all_types(df_demo = INSEE_data,
+                                 df_acti = nw,
+                                 target_distri = den,
+                                 walk_RR =RR_walk_sup ,
+                                 cycle_RR =RR_cycle_sup,
+                                 eCycle_RR = eCycle_RR_sup)
+sum(tot_table_sup$tot_S1$n_prev_wo_S0)
+
+
+
+
+s = ggplot(data=impact_tab, aes(x = year, y = n_prev_wo_S0)) +
+  geom_bar(stat = "identity")
+
+
+####################
+# impact per year
+####################
+death_prev_cycle_year = aggregate(res_cycle$S1$n_prev_wo_S0, by= list(res_cycle$S1$year), FUN = "sum")
+death_prev_cycle_year$Type = "Cycle"
+death_prev_walk_year = aggregate(res_walk$S1$n_prev_wo_S0, by= list(res_walk$S1$year), FUN = "sum")
+death_prev_walk_year$Type = "Walk"
+
+death_prev = rbind(death_prev_cycle_year, death_prev_walk_year)
+death_prev$Type = factor(death_prev$Type )
+colnames(death_prev) = c("year", "death_prev", "Type")
+death_prev$year = as.numeric(death_prev$year)
+
+summary(death_prev)
+s = ggplot(data=death_prev, aes(x = year, y = death_prev, fill=Type)) +
+  geom_bar(stat = "identity")
+
+plot(s)
