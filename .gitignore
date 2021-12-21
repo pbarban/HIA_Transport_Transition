@@ -39,5 +39,5 @@ vignettes/*.pdf
 .Renviron
 
 # Plots
-.tiff
-.png
+*.tiff
+*.png
