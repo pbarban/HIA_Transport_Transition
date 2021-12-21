@@ -217,78 +217,41 @@ y_vec_6 = c(2025, 2030, 2035, 2040,2045, 2050)
 
 evo_walk = evo_milage(res_walk)
 p_evo_walk = plot_evo_milage(evo = evo_walk,y_vec = y_vec_3,
-                              scale_y_lab = "Weekly walking duration (minutes)")
+                             scale_y_lab = "")
+                            #  scale_y_lab = "Weekly walking duration (minutes)")
 
 evo_cycle = evo_milage(res_cycle)
 p_evo_cycle = plot_evo_milage(evo = evo_cycle,y_vec = y_vec_3,
-                              scale_y_lab = "Weekly cycling duration (minutes)")
+                              scale_y_lab = "")
+                             # scale_y_lab = "Weekly cycling duration (minutes)")
 
 evo_ecycle = evo_milage(res_ecycle)
 p_evo_ecycle = plot_evo_milage(evo = evo_ecycle, y_vec = y_vec_3,
-                              scale_y_lab = "Weekly e-cycling duration (minutes)")
+                               scale_y_lab = "")
+                             # scale_y_lab = "Weekly e-cycling duration (minutes)")
 
 
-tot_cycle = 
 
-p_evo_walk
-p_evo_cycle
-p_evo_ecycle
 
-ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,
-          ncol = 1)
-
-evo_ecycle = evo_milage(res_ecycle)
 # pour représenter les évolutions, combiner vélo et VAE
 evo_all_cycle = evo_cycle
 evo_all_cycle$km_pp_y = evo_cycle$km_pp_y + evo_ecycle$km_pp_y
 evo_all_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_ecycle$minute_pp_w
-max(evo_all_cycle$minute_pp_w)
-
-y_vec = c(2021, 2030, 2040, 2050)
-evo_cycle_years = evo_all_cycle[evo_all_cycle$year %in% y_vec, ] %>% 
-  filter (order>14 & order<85) %>% 
-  ungroup()
-max(evo_cycle_years$minute_pp_w)
-evo_cycle_years$year = as.factor(evo_cycle_years$year)
-
-# tracer histogram de l'évolution des temps parcourus
-evo_cycle_years %>%  
-  ggplot() + geom_bar(aes(age_grp,
-                        y = minute_pp_w,
-                        fill = year),
-                    stat = "identity",
-                    position = "dodge2", 
-                    width = 0.7) +
-  scale_y_continuous(name = "Weekly cycling duration (minutes)")+
-  theme_minimal() +
-  xlab("Age group") +
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-        text = element_text(size = 15),
-        axis.text.x = element_text(angle = 60, hjust=1))
-ggsave("Evo_cycling_volumes.png", plot = last_plot())
+p_evo__all_cycle = plot_evo_milage(evo = evo_all_cycle, y_vec = y_vec_3,
+                                   scale_y_lab = "")
+                               #scale_y_lab = "Weekly all cycling duration (minutes)")
 
 
-evo_walk = evo_milage(res_walk)
-evo_walk_years = evo_walk[evo_walk$year %in% y_vec, ] %>% 
-  filter (order>14 & order<85) %>% 
-  ungroup()
-evo_walk_years$year = as.factor(evo_walk_years$year)
+p_evo_walk
+p_evo_cycle
+p_evo_ecycle
+p_evo__all_cycle
 
+p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,p_evo__all_cycle,
+          labels = c("A", "B", "C", "D"),
+          ncol = 1)
 
-#same with walking
-evo_walk_years %>%  
-  ggplot() + geom_bar(aes(age_grp,
-                          y = minute_pp_w,
-                          fill = year),
-                      stat = "identity",
-                      position = "dodge2", 
-                      width = 0.7) +
-  scale_y_continuous(name = "Weekly walking duration (minutes)")+
-  theme_minimal() +
-  xlab("Age group") +
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-        text = element_text(size = 15),
-        axis.text.x = element_text(angle = 60, hjust=1))
-ggsave("Evo_walking_volumes.png", plot = last_plot())
+tiff("evolution volumes per age.tiff", units="in", width = 5*1.4, height= 8*1.4, res=190)
+plot(p2)
+dev.off()
+
