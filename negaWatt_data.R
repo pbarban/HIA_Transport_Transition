@@ -29,4 +29,9 @@ nw_data = raw_data %>%
           value = as.numeric(value)) %>% 
   filter(year %in% c(2020:2050))
 
+
+# add a category for total cycling
+tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "tot_cycle")
+nw_data = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
+
 rm(raw_data)
