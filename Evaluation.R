@@ -379,16 +379,20 @@ evo = evo_res_per_year[evo_res_per_year$year %in% y_vec_3, ] %>%
 evo$year = as.factor(evo$year)
 
 
-ggplot(data = evo, 
+
+plot_death_age = ggplot(data = evo, 
        aes(x=age_grp, y = death_prev, fill = year, ymin = death_prev_low, ymax = death_prev_sup)) +
   geom_bar(position = position_dodge(), stat = "identity", width=0.7) + 
-  geom_errorbar( position = position_dodge(width = 0.7), colour="black", width=0.4)
-
-+
-  scale_y_continuous(name = scale_y_lab)+
+  geom_errorbar( position = position_dodge(width = 0.7), colour="black", width=0.4)+
+  scale_y_continuous(name = "Deaths prevented")  +
   theme_minimal() +
-  xlab("Age group") +
+  xlab("") +
+  ylab("Deaths prevented") +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
         text = element_text(size = 15),
         axis.text.x = element_text(angle = 60, hjust=1))
+
+tiff("deaths per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res=190)
+plot(plot_death_age)
+dev.off()
