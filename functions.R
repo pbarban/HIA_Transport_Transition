@@ -177,7 +177,7 @@ n_prev = function(data, RR, Ref_volume){
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of physical activity
                            target_distri, # data frame with the target age-distribution of physical activity
-                           type_eval = "cycle", # has to be "walk", "cycle" or "e_cycle"
+                           type_eval = "cycle", # has to be "walk", "cycle", "e_cycle" or "tot_cycle
                            RR = cycle_RR, 
                            Ref_volume = cycle_Ref_volume,
                            speed = cycle_speed){
@@ -187,7 +187,7 @@ impact_per_type = function(df_demo, # demographic data frame
   
   acti =  df_acti %>% filter(type == type_eval)
   
-  type_target = ifelse(type_eval == "e_cycle" , "cycle", type_eval)# if e_bike, use the target distrib of classic bike
+  type_target = ifelse(type_eval %in% c("e_cycle","tot_cycle")  , "cycle", type_eval)# if e_bike or tot_cycle, use the target distrib of classic bike
   target = target_distri %>% filter(type == type_target)
   
   ####### 
