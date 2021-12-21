@@ -9,9 +9,7 @@ source("negaWatt_data.R")
 
 ###### plot nW data
 str(nw_data)
-tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "Tot_cycle")
-nw_data2 = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
-nw_data2$type <- factor(nw_data2$type, levels=c("walk","Tot_cycle","cycle", "e_cycle"), 
+nw_data2$type <- factor(nw_data$type, levels=c("walk","tot_cycle","cycle", "e_cycle"), 
                         labels=c("Walk", "Total cycle","Bike", "e-Bike" ))
 # labels=c("Marche", "Total vélo","vélo", "VAE" ))
 
