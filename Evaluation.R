@@ -3,7 +3,7 @@ library(ggpubr)
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
-
+source("functions.R")
 
 
 
@@ -125,7 +125,9 @@ res_walk = impact_per_type(df_demo = INSEE_data,
                             type_eval = "walk", 
                             RR = walk_RR, 
                             Ref_volume = walk_Ref_volume,
-                            speed = walk_speed)
+                            speed = walk_speed,
+                           age_min = 20, # minimal age to consider health benefits
+                           age_max = 84)
 
 
 res_cycle = impact_per_type(df_demo = INSEE_data,
@@ -134,7 +136,9 @@ res_cycle = impact_per_type(df_demo = INSEE_data,
                             type_eval = "cycle", 
                             RR = cycle_RR, 
                             Ref_volume = cycle_Ref_volume,
-                            speed = cycle_speed)
+                            speed = cycle_speed,
+                            age_min = 20, # minimal age to consider health benefits
+                            age_max = 84)
 
 res_ecycle = impact_per_type(df_demo = INSEE_data,
                             df_acti = nw,
@@ -142,7 +146,9 @@ res_ecycle = impact_per_type(df_demo = INSEE_data,
                             type_eval = "e_cycle", 
                             RR = eCycle_RR, 
                             Ref_volume = eCycle_Ref_volume,
-                            speed = eCycle_speed)
+                            speed = eCycle_speed,
+                            age_min = 20, # minimal age to consider health benefits
+                            age_max = 84)
 
 tot_walk =sum(res_walk$S1$n_prev_wo_S0, na.rm = T); tot_walk
 tot_cycle = sum(res_cycle$S1$n_prev_wo_S0, na.rm = T); tot_cycle
@@ -154,7 +160,9 @@ tot_nw = tot_walk + tot_cycle + tot_ecycle; tot_nw
 
 tot_table = impact_all_types(df_demo = INSEE_data,
                              df_acti = nw,
-                             target_distri = den)
+                             target_distri = den,
+                             age_min = 20, # minimal age to consider health benefits
+                             age_max = 84)
 sum(tot_table$tot_S1$n_prev_wo_S0) # we find the same results as when doing each type separately, good !
 
 

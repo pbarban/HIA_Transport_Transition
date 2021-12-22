@@ -200,9 +200,7 @@ allocate_km_by_age =function(df_demo, # demographic data frame
   S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
   S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
   
-  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
-  
-  return(S1tab)
+ return(S1tab)
   
 }
 
@@ -227,6 +225,8 @@ impact_per_type = function(df_demo, # demographic data frame
                              df_acti, # data frame of aggregated active transport volume
                              target_distri, # data frame with the target age-distribution of physical activity
                              type_eval)
+  
+  S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
   
   ####### 
   # create the reference scenario = 2020 volumes all along
@@ -270,7 +270,9 @@ impact_all_types = function(df_demo, # demographic data frame
                             walk_speed=4.8,
                             eCycle_RR= 0.9224138,
                             eCycle_Ref_volume =100,
-                            eCycle_speed = 18){
+                            eCycle_speed = 18,
+                            age_min = 20, # minimal age to consider health benefits
+                            age_max = 84){
   
   res_walk = impact_per_type(df_demo = df_demo,
                              df_acti = df_acti,
@@ -278,7 +280,9 @@ impact_all_types = function(df_demo, # demographic data frame
                              type_eval = "walk", 
                              RR = walk_RR, 
                              Ref_volume = walk_Ref_volume,
-                             speed = walk_speed)
+                             speed = walk_speed,
+                             age_min, # minimal age to consider health benefits
+                             age_max)
   
   res_cycle = impact_per_type(df_demo = df_demo,
                               df_acti = df_acti,
@@ -286,7 +290,9 @@ impact_all_types = function(df_demo, # demographic data frame
                               type_eval = "cycle", 
                               RR = cycle_RR, 
                               Ref_volume = cycle_Ref_volume,
-                              speed = cycle_speed)
+                              speed = cycle_speed,
+                              age_min, # minimal age to consider health benefits
+                              age_max)
   
   res_ecycle = impact_per_type(df_demo = df_demo,
                                df_acti = df_acti,
@@ -294,7 +300,9 @@ impact_all_types = function(df_demo, # demographic data frame
                                type_eval = "e_cycle", 
                                RR = eCycle_RR, 
                                Ref_volume = eCycle_Ref_volume,
-                               speed = eCycle_speed)
+                               speed = eCycle_speed,
+                               age_min, # minimal age to consider health benefits
+                               age_max)
   
   tot_S1tab = df_demo
   tot_S1tab = tot_S1tab %>% arrange(year) 
