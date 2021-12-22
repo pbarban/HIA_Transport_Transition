@@ -174,20 +174,13 @@ n_prev = function(data, RR, Ref_volume){
 }
 
 
-impact_per_type = function(df_demo, # demographic data frame
-                           df_acti, # data frame of physical activity
-                           target_distri, # data frame with the target age-distribution of physical activity
-                           type_eval = "cycle", # has to be "walk", "cycle", "e_cycle" or "tot_cycle
-                           RR = cycle_RR, 
-                           Ref_volume = cycle_Ref_volume,
-                           speed = cycle_speed,
-                           age_min = 20, # minimal age to consider health benefits
-                           age_max = 84 # maximal age to consider health benefits
-                           ){
-  # output a list with 2 demographic tables which calculate for each year and age the number of deaths prevented + yll
-  # for a specified transport type
-  # requirs a demographic dataset, a dataset of physical activity volumes and a target distribution of volumes
-  
+allocate_km_by_age =function(df_demo, # demographic data frame
+                             df_acti, # data frame of aggregated active transport volume
+                             target_distri, # data frame with the target age-distribution of physical activity
+                             type_eval = "cycle" # has to be "walk", "cycle", "e_cycle" or "tot_cycle)
+                            ){
+  # for a specified transport type, given an aggregated transport volume and a target distribution, 
+  # allocates the aggregated volume across ages
   acti =  df_acti %>% filter(type == type_eval)
   
   type_target = ifelse(type_eval %in% c("e_cycle","tot_cycle")  , "cycle", type_eval)# if e_bike or tot_cycle, use the target distrib of classic bike
@@ -208,6 +201,32 @@ impact_per_type = function(df_demo, # demographic data frame
   S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
   
   S1tab$minute_pp_w =  (60*S1tab$km_pp_y /speed) / (365.25/7)
+  
+  return(S1tab)
+  
+}
+
+
+impact_per_type = function(df_demo, # demographic data frame
+                           df_acti, # data frame of aggregated active transport volume
+                           target_distri, # data frame with the target age-distribution of physical activity
+                           type_eval = "cycle", # has to be "walk", "cycle", "e_cycle" or "tot_cycle
+                           RR = cycle_RR, 
+                           Ref_volume = cycle_Ref_volume,
+                           speed = cycle_speed,
+                           age_min = 20, # minimal age to consider health benefits
+                           age_max = 84 # maximal age to consider health benefits
+                           ){
+  # output a list with 2 demographic tables which calculate for each year and age the number of deaths prevented + yll
+  # for a specified transport type
+  # requires a demographic dataset, a dataset of physical activity volumes and a target distribution of volumes
+  
+  
+  
+  S1tab = allocate_km_by_age(df_demo, # demographic data frame
+                             df_acti, # data frame of aggregated active transport volume
+                             target_distri, # data frame with the target age-distribution of physical activity
+                             type_eval)
   
   ####### 
   # create the reference scenario = 2020 volumes all along
