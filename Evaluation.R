@@ -9,9 +9,12 @@ source("negaWatt_data.R")
 
 ###### plot nW data
 str(nw_data)
+nw_data2 = nw_data
 nw_data2$type <- factor(nw_data$type, levels=c("walk","tot_cycle","cycle", "e_cycle"), 
-                        labels=c("Walk", "Total cycle","Bike", "e-Bike" ))
+                        labels=c("Walk", "Total cycle","Bike", "E-bike" ))
+#nw_data2 = nw_data2 %>%  filter(year>2021)
 # labels=c("Marche", "Total vélo","vélo", "VAE" ))
+
 
 p1 = nw_data2 %>% 
   ggplot() +  
