@@ -180,7 +180,10 @@ impact_per_type = function(df_demo, # demographic data frame
                            type_eval = "cycle", # has to be "walk", "cycle", "e_cycle" or "tot_cycle
                            RR = cycle_RR, 
                            Ref_volume = cycle_Ref_volume,
-                           speed = cycle_speed){
+                           speed = cycle_speed,
+                           age_min = 20, # minimal age to consider health benefits
+                           age_max = 84 # maximal age to consider health benefits
+                           ){
   # output a list with 2 demographic tables which calculate for each year and age the number of deaths prevented + yll
   # for a specified transport type
   # requirs a demographic dataset, a dataset of physical activity volumes and a target distribution of volumes
@@ -221,6 +224,14 @@ impact_per_type = function(df_demo, # demographic data frame
   
   S1tab$n_prev_wo_S0 = S1tab$n_prev - S0tab$n_prev 
   S1tab$yll_prev_wo_S0 = S1tab$yll_prev - S0tab$yll_prev 
+  
+  ### apply minimal/maximal age
+  S1tab$n_prev[S1tab$age<age_min] = S1tab$n_prev[S1tab$age>=age_max] = 0
+  S1tab$yll_prev[S1tab$age<age_min] =  S1tab$yll_prev[S1tab$age>=age_max] =0
+  S1tab$n_prev_wo_S0[S1tab$age<age_min] = S1tab$n_prev_wo_S0[S1tab$age>=age_max] =0
+  S1tab$yll_prev_wo_S0[S1tab$age<age_min] = S1tab$yll_prev_wo_S0[S1tab$age>=age_max] =0
+  S0tab$n_prev[S0tab$age<age_min] = S0tab$n_prev[S0tab$age>=age_max] =0
+  S0tab$yll_prev[S0tab$age<age_min] = S0tab$yll_prev[S0tab$age>=age_max] =0
   
   li = list(S1 = S1tab, S0 = S0tab)
   return(li)
