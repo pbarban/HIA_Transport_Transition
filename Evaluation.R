@@ -6,6 +6,11 @@ source("negaWatt_data.R")
 source("functions.R")
 
 
+###### upload monetarisation YLL
+monetarisation = read.csv2("monetarization_yll.csv")
+plot(monetarisation$year, monetarisation$euro_yll, type = 'l')
+# values are not the right one now, will update this
+
 
 ###### plot nW data
 str(nw_data)
