@@ -329,13 +329,17 @@ res_per_year_group = as.data.frame(res_per_year) %>%
             death_prev_sup =sum(death_prev_sup),
             yll = sum(yll),
             yll_low = sum(yll_low),
-            yll_sup = sum(yll_sup))
+            yll_sup = sum(yll_sup)) %>% 
+  left_join(monetarisation, by = "year")  %>% 
+  mutate(euro = euro_yll*yll,
+         euro_low = euro_yll*yll_low,
+         euro_sup = euro_yll*yll_sup)
 
             
 
 
 deathplot = ggplot(data=res_per_year_group)+
-  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#c2a5cf") +
+  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#a6cee3") +
   ylab("Deaths prevented")+
   xlab("")+
   geom_errorbar(aes(x = year,ymin = death_prev_low, ymax = death_prev_sup, width = 0.4)) +
@@ -343,15 +347,23 @@ deathplot = ggplot(data=res_per_year_group)+
 deathplot
 
 yll_plot = ggplot(data=res_per_year_group)+
-  geom_bar(aes(x = year, y = yll/1000),stat = "identity", fill="#a6dba0") +
+  geom_bar(aes(x = year, y = yll/1000),stat = "identity", fill="#1f78b4") +
   ylab("YLL prevented (thousands)")+
   xlab("Year")+
   geom_errorbar(aes(x = year,ymin = yll_low/1000, ymax = yll_sup/1000, width = 0.4)) +
   theme_minimal()
 yll_plot
 
-impact_plot = ggarrange (deathplot, yll_plot, ncol = 1) 
-tiff("total impact per year.tiff", units="in", width = 5*1.4, height= 4.5*1.4, res=190)
+euros_plot =  ggplot(data=res_per_year_group)+
+  geom_bar(aes(x = year, y = euro/1e9),stat = "identity", fill="#b2df8a") +
+  ylab("Annual benefits (billions)")+
+  xlab("Year")+
+  geom_errorbar(aes(x = year,ymin = euro_low/1e9, ymax = euro_sup/1e9, width = 0.4)) +
+  theme_minimal()
+euros_plot
+
+impact_plot = ggarrange (deathplot, yll_plot, euros_plot, ncol = 1) 
+tiff("total impact per year.tiff", units="in", width = 5*1.4, height= 5.5*1.4, res=190)
 plot(impact_plot)
 dev.off()
 
