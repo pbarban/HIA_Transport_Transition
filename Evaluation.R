@@ -7,7 +7,7 @@ source("functions.R")
 
 
 ###### upload monetarisation YLL
-monetarisation = read.csv2("monetarization_yll.csv")
+monetarisation = read.csv2("monetarization_yll.csv", dec=".")
 plot(monetarisation$year, monetarisation$euro_yll, type = 'l')
 # values are not the right one now, will update this
 

@@ -205,6 +205,74 @@ allocate_km_by_age =function(df_demo, # demographic data frame
 }
 
 
+
+
+allocate_km_walk_by_age =function(df_demo, # demographic data frame
+                             df_acti, # data frame of aggregated active transport volume
+                             target_distri # data frame with the target age-distribution of physical activity
+){
+  # allocates the aggregated volume of walking across ages
+
+  acti =  df_acti %>% filter(type == "walk")
+  target = target_distri %>% filter(type == "walk")
+  
+  ####### 
+  ##in S1, the scenario assessed, calculate the km_w per person
+  S1tab = df_demo
+  S1tab = S1tab %>% arrange(year)
+  S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
+  
+  # creat sum(rho*pop) for each year
+  tmp = S1tab %>% group_by(year) %>% 
+    mutate(rho_pop = rho*pop,
+           sum_rho_pop = sum(rho_pop))
+  S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+  S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
+  
+  return(S1tab)
+  
+}
+
+
+allocate_km_cycle_by_age_with_delta =function(df_demo, # demographic data frame
+                                    df_acti, # data frame of aggregated active transport volume
+                                    target_distri # data frame with the target age-distribution of physical activity
+){
+  # allocates the aggregated volume of walking across ages
+  
+  acti =  df_acti %>% filter(type == "tot_cycle")
+  target = target_distri %>% filter(type == "cycle")
+  
+  
+  ############
+  ## first allocate the total of km cycle across age, as for walking
+  ############
+  
+  ##in S1, the scenario assessed, calculate the km_w per person
+  S1tab = df_demo
+  S1tab = S1tab %>% arrange(year)
+  S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
+  
+  # creat sum(rho*pop) for each year
+  tmp = S1tab %>% group_by(year) %>% 
+    mutate(rho_pop = rho*pop,
+           sum_rho_pop = sum(rho_pop))
+  S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+  S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
+  
+  ############
+  ## then allocate the total of km cycle into eBike or cycle
+  ############
+  
+  
+  return(S1tab)
+  
+}
+
+
+
 impact_per_type = function(df_demo, # demographic data frame
                            df_acti, # data frame of aggregated active transport volume
                            target_distri, # data frame with the target age-distribution of physical activity
