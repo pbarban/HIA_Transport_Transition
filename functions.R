@@ -174,34 +174,35 @@ n_prev = function(data, RR, Ref_volume){
 }
 
 
-optimize_rho_a = function(par = c(a, b), tab = dt,
+optimize_rho_a = function(par = c(a, b), tab,
                           obj_delta = 6.7,
                           obj_rho = obj_rho,
                           coef_delta = 1, #coef to give the relative importance of criteria delta
                           coef_rho=5 #coef to give the relative importance of criteria rho
                   ){
-  dt$rho_a = par[1]*dt$age+par[2]
-  dt$rho_a[dt$rho_a<0] = 0
-  dt$rho_a[dt$rho_a>1] = 1 #rho_a is the vector of proportion of KM cycled with eBike per age
+  tab$rho_a = par[1]*tab$age+par[2]
+  tab$rho_a[tab$rho_a<=0] = 0.001
+  tab$rho_a[tab$rho_a>=1] = 0.999 #rho_a is the vector of proportion of KM cycled with eBike per age
   
-  dt$km_y_a = dt$km_pp_y*dt$pop
+  tab$km_y_a = tab$km_pp_y*tab$pop
   
   # ebike
-  a_rho_a_km_a_ebike = dt$age*dt$km_y_a*dt$rho_a #sum of km weighted by age
-  rho_a_km_a_ebike = dt$km_y_a*dt$rho_a # sum of km ebike
+  a_rho_a_km_a_ebike = tab$age*tab$km_y_a*tab$rho_a #sum of km weighted by age
+  rho_a_km_a_ebike = tab$km_y_a*tab$rho_a # sum of km ebike
   
   #classical bike
-  a_rho_a_km_a_classical = dt$age*dt$km_y_a*(1-dt$rho_a) #sum of km weighted by age
-  rho_a_km_a_classical = dt$km_y_a*(1-dt$rho_a) # sum of km classical bike
+  a_rho_a_km_a_classical = tab$age*tab$km_y_a*(1-tab$rho_a) #sum of km weighted by age
+  rho_a_km_a_classical = tab$km_y_a*(1-tab$rho_a) # sum of km classical bike
   
   # mean ages
   age_mean_ebike = sum(a_rho_a_km_a_ebike)/sum(rho_a_km_a_ebike) 
   age_mean_classical = sum(a_rho_a_km_a_classical) / sum(rho_a_km_a_classical)
+  age_mean_classical[age_mean_classical==0] = 14 # to avoid the algo set it to zero
   
   delta = age_mean_ebike - age_mean_classical # this is my first optim criteria
   
   # now recalculate the global rho obtaines (ie. prop eBik)
-  rho = sum( dt$km_y_a *dt$rho_a) / sum(dt$km_y_a)
+  rho = sum( tab$km_y_a *tab$rho_a) / sum(tab$km_y_a)
   
   # calculate the value to obtimize = distance
   distance = coef_rho*( (rho -obj_rho)^2  /obj_rho) +
@@ -251,7 +252,10 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
                              target_distri=den, # data frame with the target age-distribution of physical activity
                              walk_speed=4.8,
                              cycle_speed = 14,
-                             eCycle_speed = 18
+                             eCycle_speed = 18,
+                             obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                             coef_delta = 1, #coef to give the relative importance of criteria delta
+                             coef_rho=5
   ){
     
     #####
@@ -279,7 +283,7 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     target = target_distri %>% filter(type == "walk")
     
     # 2.1) in S1, the scenario assessed, calculate the km_w per person
-    S1tab = df_demo
+    S1tab = df_demo %>% filter(sexe == "Both")
     S1tab = S1tab %>% arrange(year)
     S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
     S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
@@ -301,7 +305,7 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     target = target_distri %>% filter(type == "cycle")
     
     # 3.1) in S1, the scenario assessed, calculate the km_w per person
-    S1tab = df_demo
+    S1tab = df_demo %>% filter(sexe == "Both")
     S1tab = S1tab %>% arrange(year)
     S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
     S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
@@ -315,7 +319,25 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     
     # 3.3) return S1tab_tot_cycle
     S1tab_tot_cycle = S1tab
-  }
+    
+    #####
+    # 4) allocate km_cycle btw cycle and eBike to allow delta_age
+    
+    yy = 2030# il va falloir que je boucle sur les années avant de lancer la suite !
+    dt = S1tab_tot_cycle %>% 
+      filter(year == yy) 
+    
+    obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
+    
+    opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
+                      tab = dt,
+                      obj_delta,
+                      obj_rho,
+                      coef_delta,
+                      coef_rho )
+    dt$rho_a = opt$par[1]*dt$age+opt$par[2]
+}
+    
 
 
 
