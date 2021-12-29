@@ -182,7 +182,7 @@ optimize_rho_a = function(par = c(a, b), tab,
                   ){
   tab$rho_a = par[1]*tab$age+par[2]
   tab$rho_a[tab$rho_a<=0] = 0.001
-  tab$rho_a[tab$rho_a>=1] = 0.999 #rho_a is the vector of proportion of KM cycled with eBike per age
+  tab$rho_a[tab$rho_a>=1] = 0.90 #rho_a is the vector of proportion of KM cycled with eBike per age
   
   tab$km_y_a = tab$km_pp_y*tab$pop
   
@@ -197,7 +197,7 @@ optimize_rho_a = function(par = c(a, b), tab,
   # mean ages
   age_mean_ebike = sum(a_rho_a_km_a_ebike)/sum(rho_a_km_a_ebike) 
   age_mean_classical = sum(a_rho_a_km_a_classical) / sum(rho_a_km_a_classical)
-  age_mean_classical[age_mean_classical==0] = 14 # to avoid the algo set it to zero
+  #age_mean_classical[age_mean_classical==0] = 14 # to avoid the algo set it to zero
   
   delta = age_mean_ebike - age_mean_classical # this is my first optim criteria
   
@@ -332,10 +332,12 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
                       tab = dt,
                       obj_delta,
-                      obj_rho,
-                      coef_delta,
-                      coef_rho )
+                      obj_rho = obj_rho,
+                      coef_delta= coef_delta,
+                      coef_rho= coef_rho )
+    opt
     dt$rho_a = opt$par[1]*dt$age+opt$par[2]
+    dt$rho_a
 }
     
 
