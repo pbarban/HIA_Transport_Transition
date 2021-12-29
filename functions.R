@@ -174,6 +174,46 @@ n_prev = function(data, RR, Ref_volume){
 }
 
 
+optimize_rho_a = function(par = c(a, b), tab = dt,
+                          obj_delta = 6.7,
+                          obj_rho = obj_rho,
+                          coef_delta = 1, #coef to give the relative importance of criteria delta
+                          coef_rho=5 #coef to give the relative importance of criteria rho
+                  ){
+  dt$rho_a = par[1]*dt$age+par[2]
+  dt$rho_a[dt$rho_a<0] = 0
+  dt$rho_a[dt$rho_a>1] = 1 #rho_a is the vector of proportion of KM cycled with eBike per age
+  
+  dt$km_y_a = dt$km_pp_y*dt$pop
+  
+  # ebike
+  a_rho_a_km_a_ebike = dt$age*dt$km_y_a*dt$rho_a #sum of km weighted by age
+  rho_a_km_a_ebike = dt$km_y_a*dt$rho_a # sum of km ebike
+  
+  #classical bike
+  a_rho_a_km_a_classical = dt$age*dt$km_y_a*(1-dt$rho_a) #sum of km weighted by age
+  rho_a_km_a_classical = dt$km_y_a*(1-dt$rho_a) # sum of km classical bike
+  
+  # mean ages
+  age_mean_ebike = sum(a_rho_a_km_a_ebike)/sum(rho_a_km_a_ebike) 
+  age_mean_classical = sum(a_rho_a_km_a_classical) / sum(rho_a_km_a_classical)
+  
+  delta = age_mean_ebike - age_mean_classical # this is my first optim criteria
+  
+  # now recalculate the global rho obtaines (ie. prop eBik)
+  rho = sum( dt$km_y_a *dt$rho_a) / sum(dt$km_y_a)
+  
+  # calculate the value to obtimize = distance
+  distance = coef_rho*( (rho -obj_rho)^2  /obj_rho) +
+    coef_delta *( (delta-obj_delta)^2 / obj_delta )
+  
+  return(distance)
+}
+
+
+
+
+
 allocate_km_by_age =function(df_demo, # demographic data frame
                              df_acti, # data frame of aggregated active transport volume
                              target_distri, # data frame with the target age-distribution of physical activity
@@ -211,7 +251,7 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
                              target_distri=den, # data frame with the target age-distribution of physical activity
                              walk_speed=4.8,
                              cycle_speed = 14,
-                             eCycle_speed = 18)
+                             eCycle_speed = 18
   ){
     
     #####
