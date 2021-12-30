@@ -319,29 +319,36 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     S1tab$rho_a = NA
     for (i in 1: length(unique(S1tab$year))){
       yy = unique(S1tab$year)[i]
-      
-    dt = S1tab %>% 
-      filter(year == yy) 
-    
-    obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
-    
-    if(obj_delta = 0){ # if we assume no age difference, then the yearly proportion applies to all ages
-      S1tab$rho_a[S1tab$year==yy] = rep(obj_rho, length( S1tab$rho_a[S1tab$year==yy]) )
-    } else {
-          opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
-                          tab = dt,
-                          obj_delta,
-                          obj_rho = obj_rho,
-                          coef_delta= coef_delta,
-                          coef_rho= coef_rho )
-          rho_a = opt$par[1]*dt$age+opt$par[2]
-          S1tab$rho_a[S1tab$year==yy] =rho_a
         
-        }
-    }
+      dt = S1tab %>% 
+        filter(year == yy) 
+      
+      obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
+      
+      if(obj_delta == 0){ # if we assume no age difference, then the yearly proportion applies to all ages
+        S1tab$rho_a[S1tab$year==yy] = rep(obj_rho, length( S1tab$rho_a[S1tab$year==yy]) )
+      } else {
+            opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
+                            tab = dt,
+                            obj_delta,
+                            obj_rho = obj_rho,
+                            coef_delta= coef_delta,
+                            coef_rho= coef_rho )
+            rho_a = opt$par[1]*dt$age+opt$par[2]
+            S1tab$rho_a[S1tab$year==yy] =rho_a
+          
+          }
+      }
     S1tab$km_pp_y_classical = S1tab$km_pp_y_bike*(1-S1tab$rho_a)
     S1tab$km_pp_y_eCycle = S1tab$km_pp_y_bike*S1tab$rho_a
     
+    S1tab = S1tab %>% 
+      select(age, year, pop, deaths, MR, age_grp, yll, 
+             total_km_y_w, total_km_y_bike,
+             km_pp_y_walk, km_pp_y_bike, km_pp_y_classical, km_pp_y_eCycle)
+    
+    
+    return(S1tab)
 }
     
 
