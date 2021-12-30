@@ -184,7 +184,7 @@ optimize_rho_a = function(par = c(a, b), tab,
   tab$rho_a[tab$rho_a<=0] = 0.001
   tab$rho_a[tab$rho_a>=1] = 0.90 #rho_a is the vector of proportion of KM cycled with eBike per age
   
-  tab$km_y_a = tab$km_pp_y*tab$pop
+  tab$km_y_a = tab$km_pp_y_bike*tab$pop
   
   # ebike
   a_rho_a_km_a_ebike = tab$age*tab$km_y_a*tab$rho_a #sum of km weighted by age
@@ -285,61 +285,62 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     # 2.1) in S1, the scenario assessed, calculate the km_w per person
     S1tab = df_demo %>% filter(sexe == "Both")
     S1tab = S1tab %>% arrange(year)
-    S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
-    S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
+    S1tab$rho_w = as.numeric(target$rho[match(S1tab$age, target$age)])
+    S1tab$total_km_y_w = acti$total_km_y[match(S1tab$year, acti$year)]
     
     # 2.2) creat sum(rho*pop) for each year
     tmp = S1tab %>% group_by(year) %>% 
-      mutate(rho_pop = rho*pop,
+      mutate(rho_pop = rho_w*pop,
              sum_rho_pop = sum(rho_pop))
-    S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-    S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
+    sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+    S1tab$km_pp_y_walk = S1tab$total_km_y_w*S1tab$rho_w/sum_rho_pop
     
-    # 2.3) return S1tab_walk
-    S1tab_walk = S1tab
-    
-    
+
     #####
     # 3) allocates the global (ie cycling + eBike) volume of cycling across ages
     acti =  exp_acti %>% filter(type == "tot_cycle")
     target = target_distri %>% filter(type == "cycle")
     
     # 3.1) in S1, the scenario assessed, calculate the km_w per person
-    S1tab = df_demo %>% filter(sexe == "Both")
-    S1tab = S1tab %>% arrange(year)
-    S1tab$rho = as.numeric(target$rho[match(S1tab$age, target$age)])
-    S1tab$total_km_y = acti$total_km_y[match(S1tab$year, acti$year)]
+    S1tab$rho_bike = as.numeric(target$rho[match(S1tab$age, target$age)])
+    S1tab$total_km_y_bike = acti$total_km_y[match(S1tab$year, acti$year)]
     
     # 3.2) creat sum(rho*pop) for each year
     tmp = S1tab %>% group_by(year) %>% 
-      mutate(rho_pop = rho*pop,
+      mutate(rho_pop = rho_bike*pop,
              sum_rho_pop = sum(rho_pop))
-    S1tab$sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-    S1tab$km_pp_y = S1tab$total_km_y*S1tab$rho/S1tab$sum_rho_pop
+    sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+    S1tab$km_pp_y_bike = S1tab$total_km_y_bike*S1tab$rho_bike/sum_rho_pop
     
-    # 3.3) return S1tab_tot_cycle
-    S1tab_tot_cycle = S1tab
-    S1tab_tot_cycle$rho_a = NA
+   
+   
     #####
     # 4) allocate km_cycle btw cycle and eBike to allow delta_age
-    
-    for (i in 1: length(unique(S1tab_tot_cycle$year))){
-      yy = unique(S1tab_tot_cycle$year)[i]
+    S1tab$rho_a = NA
+    for (i in 1: length(unique(S1tab$year))){
+      yy = unique(S1tab$year)[i]
       
-    dt = S1tab_tot_cycle %>% 
+    dt = S1tab %>% 
       filter(year == yy) 
     
     obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
     
-    opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
-                      tab = dt,
-                      obj_delta,
-                      obj_rho = obj_rho,
-                      coef_delta= coef_delta,
-                      coef_rho= coef_rho )
-        rho_a = opt$par[1]*dt$age+opt$par[2]
-    S1tab_tot_cycle$rho_a[S1tab_tot_cycle$year==yy] =rho_a
+    if(obj_delta = 0){ # if we assume no age difference, then the yearly proportion applies to all ages
+      S1tab$rho_a[S1tab$year==yy] = rep(obj_rho, length( S1tab$rho_a[S1tab$year==yy]) )
+    } else {
+          opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
+                          tab = dt,
+                          obj_delta,
+                          obj_rho = obj_rho,
+                          coef_delta= coef_delta,
+                          coef_rho= coef_rho )
+          rho_a = opt$par[1]*dt$age+opt$par[2]
+          S1tab$rho_a[S1tab$year==yy] =rho_a
+        
+        }
     }
+    S1tab$km_pp_y_classical = S1tab$km_pp_y_bike*(1-S1tab$rho_a)
+    S1tab$km_pp_y_eCycle = S1tab$km_pp_y_bike*S1tab$rho_a
     
 }
     
