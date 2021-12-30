@@ -319,11 +319,13 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     
     # 3.3) return S1tab_tot_cycle
     S1tab_tot_cycle = S1tab
-    
+    S1tab_tot_cycle$rho_a = NA
     #####
     # 4) allocate km_cycle btw cycle and eBike to allow delta_age
     
-    yy = 2030# il va falloir que je boucle sur les années avant de lancer la suite !
+    for (i in 1: length(unique(S1tab_tot_cycle$year))){
+      yy = unique(S1tab_tot_cycle$year)[i]
+      
     dt = S1tab_tot_cycle %>% 
       filter(year == yy) 
     
@@ -335,9 +337,10 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
                       obj_rho = obj_rho,
                       coef_delta= coef_delta,
                       coef_rho= coef_rho )
-    opt
-    dt$rho_a = opt$par[1]*dt$age+opt$par[2]
-    dt$rho_a
+        rho_a = opt$par[1]*dt$age+opt$par[2]
+    S1tab_tot_cycle$rho_a[S1tab_tot_cycle$year==yy] =rho_a
+    }
+    
 }
     
 
