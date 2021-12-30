@@ -102,6 +102,9 @@ eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 #############################################################################################
 
 #### merge nw_data and INSEE_data
+
+
+### this chunk may be useless
 INSEE_data = INSEE_data %>% 
   filter(sexe == "Both") # Filter by both, to fix at one point
 
