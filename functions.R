@@ -173,6 +173,12 @@ n_prev = function(data, RR, Ref_volume){
   return(res)
 }
 
+n_prev_v2 = function(data){
+  # calculate the number of death prevented based on a dataset formated as S1tab, with colums as RR and a Ref_volume
+  res = (1-data$RR)*(data$minute_pp_w/data$Ref_volume)*data$MR*data$pop
+  return(res)
+}
+
 
 optimize_rho_a = function(par = c(a, b), tab,
                           obj_delta = 6.7,
@@ -247,7 +253,7 @@ allocate_km_by_age =function(df_demo, # demographic data frame
 
 
 
-allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
+allocate_km_by_age_v2 =function(df_demo= INSEE_data, # demographic data frame
                              df_acti= nw_data, # data frame of aggregated active transport volume
                              target_distri=den, # data frame with the target age-distribution of physical activity
                              walk_speed=4.8,
@@ -352,7 +358,120 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
     
     return(S1tab)
 }
+  
+
+  
+impact_all_types_v2 = function(df_demo= INSEE_data, # demographic data frame
+                               df_acti= nw_data, # data frame of aggregated active transport volume
+                               target_distri=den, # data frame with the target age-distribution of physical activity
+                               walk_speed=4.8,
+                               cycle_speed = 14,
+                               eCycle_speed = 18,
+                               obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                               coef_delta = 1, #coef to give the relative importance of criteria delta
+                               coef_rho=5,
+                               walk_RR = 0.89,
+                               walk_Ref_volume= 168,
+                               cycle_RR = 0.90, 
+                               cycle_Ref_volume = 100,
+                               eCycle_RR= 0.9224138,
+                               eCycle_Ref_volume =100,
+                               age_min = 20, # minimal age to consider health benefits
+                               age_max = 84){
+  
+  S1tab = allocate_km_by_age_v2  (df_demo= df_demo, # demographic data frame
+                                  df_acti= df_acti, # data frame of aggregated active transport volume
+                                  target_distri=target_distri, # data frame with the target age-distribution of physical activity
+                                  walk_speed=walk_speed,
+                                  cycle_speed = cycle_speed,
+                                  eCycle_speed = eCycle_speed,
+                                  obj_delta = obj_delta, #targeted age diff btw classical and eBike users
+                                  coef_delta = coef_delta, #coef to give the relative importance of criteria delta
+                                  coef_rho=coef_rho)
+  S1tab = S1tab %>% 
+    mutate(speed = case_when(type == "Walk" ~ walk_speed,
+                              type == "Bike" ~ cycle_speed,
+                              type == "E-bike" ~ eCycle_speed),
+           RR = case_when(type == "Walk" ~ walk_RR,
+                          type == "Bike" ~ cycle_RR,
+                          type == "E-bike" ~ eCycle_RR),
+           Ref_volume = case_when(type == "Walk" ~ walk_Ref_volume,
+                          type == "Bike" ~ cycle_Ref_volume,
+                          type == "E-bike" ~ eCycle_Ref_volume)) %>% 
+    mutate(minute_pp_w = (60*km_pp_y /speed) / (365.25/7))
+  
+  ####### 
+  # create the reference scenario = 2020 volumes all along
+  S0tab = S1tab
+  n_rep = nrow(S0tab) / nrow(S1tab[S1tab$year==2021,])
+  S0tab$minute_pp_w = rep(S1tab$minute_pp_w[S1tab$year==2021], n_rep) 
+  
+  ### calculated number prevented
+  S1tab$n_prev = n_prev_v2(S1tab)
+  S1tab$yll_prev = S1tab$n_prev*S1tab$yll
+  
+  S0tab$n_prev = n_prev_v2(S0tab)
+  S0tab$yll_prev = S0tab$n_prev*S1tab$yll
+  
+  S1tab$n_prev_wo_S0 = S1tab$n_prev - S0tab$n_prev 
+  S1tab$yll_prev_wo_S0 = S1tab$yll_prev - S0tab$yll_prev 
+  
+  ### apply minimal/maximal age
+  S1tab$n_prev[S1tab$age<age_min] = S1tab$n_prev[S1tab$age>=age_max] = 0
+  S1tab$yll_prev[S1tab$age<age_min] =  S1tab$yll_prev[S1tab$age>=age_max] =0
+  S1tab$n_prev_wo_S0[S1tab$age<age_min] = S1tab$n_prev_wo_S0[S1tab$age>=age_max] =0
+  S1tab$yll_prev_wo_S0[S1tab$age<age_min] = S1tab$yll_prev_wo_S0[S1tab$age>=age_max] =0
+  S0tab$n_prev[S0tab$age<age_min] = S0tab$n_prev[S0tab$age>=age_max] =0
+  S0tab$yll_prev[S0tab$age<age_min] = S0tab$yll_prev[S0tab$age>=age_max] =0
+  
+  
+  # create tables with grouped impact by year
+  impact_tot_S1 = S1tab %>% 
+    group_by(year, age, MR, pop) %>%  # need to keep MR and pop for life exp calculation
+    summarise(n_prev_tot = sum(n_prev),
+              yll_prev_tot = sum(yll_prev),
+              n_prev_wo_S0_tot = sum(n_prev_wo_S0),
+              yll_prev_wo_S0_tot = sum(yll_prev_wo_S0),)
+  impact_tot_S0 = S0tab %>% 
+    group_by(year, age, MR, pop) %>% 
+    summarise(n_prev_tot = sum(n_prev),
+              yll_prev_tot = sum(yll_prev))
+  
+  #calculate life expectancy for each year
+  life_exp_gain = NULL
+  for (yy in unique(impact_tot_S1$year)){
+    tmp = impact_tot_S1%>%  filter(year == yy)
+    tmp = tmp[order(tmp$age),]
+    tmp$MR[tmp$MR>1] = 1
+    tmp$MR[tmp$age==max(tmp$age)] = 1
     
+    tmp$MR.S1 =(tmp$MR*tmp$pop - tmp$n_prev_wo_S0_tot)/tmp$pop  # recalculate mortality rates in scenario S1 by discounting deaths prevented
+    tmp$MR.S1[tmp$age==max(tmp$age)] = 1
+    
+    prop_alive_S0 = c(1, cumprod((1 - tmp$MR) ))
+    deaths_S0 <- -diff(prop_alive_S0)
+    life_exp_S0 = sum(deaths_S0 * 0:(max(tmp$age)) ) 
+    
+    prop_alive_S1 = c(1, cumprod((1 - tmp$MR.S1) ))
+    deaths_S1 <- -diff(prop_alive_S1)
+    life_exp_S1 = sum(deaths_S1 * 0:(max(tmp$age)) ) 
+    
+    diff_exp = life_exp_S1 - life_exp_S0
+    
+    life_exp_gain = c(life_exp_gain, diff_exp)
+    
+  }
+  life_exp = data.frame(year = unique(impact_tot_S1$year), gain = life_exp_gain)
+  
+  
+  #### return
+  li = list(S1 = S1tab, S0 = S0tab, impact_tot_S1, impact_tot_S0,
+            life_exp = life_exp)
+  
+  return(li)
+
+}
+                               
 
 
 
@@ -403,6 +522,7 @@ impact_per_type = function(df_demo, # demographic data frame
   S1tab$yll_prev_wo_S0[S1tab$age<age_min] = S1tab$yll_prev_wo_S0[S1tab$age>=age_max] =0
   S0tab$n_prev[S0tab$age<age_min] = S0tab$n_prev[S0tab$age>=age_max] =0
   S0tab$yll_prev[S0tab$age<age_min] = S0tab$yll_prev[S0tab$age>=age_max] =0
+  
   
   li = list(S1 = S1tab, S0 = S0tab)
   return(li)
