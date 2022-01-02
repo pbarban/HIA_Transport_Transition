@@ -456,7 +456,77 @@ impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
                                eCycle_Ref_volume =100,
                                age_min = 20, # minimal age to consider health benefits
                                age_max = 84)
-names(impact)
-impact$life_exp
-
 sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
+
+res = impact
+
+evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
+  
+  evo = data_frame(res$S1) %>% 
+    mutate(age_grp.FACTOR = cut( age, breaks = seq(0,150, by = 5), include.lowest = T, right = F), #gather by age group
+           age_grp = as.character(age_grp.FACTOR), 
+           age_grp = gsub("\\[|\\]|\\(|\\)", "", age_grp),
+           age_grp = gsub(",", "-", age_grp),
+           post = sub(".*-","",age_grp),
+           age_grp = sub("-.*", "", age_grp),
+           age_grp = paste0(age_grp,"-", as.numeric(post)-1),
+           order = as.numeric(substr(age_grp,1,regexpr("-",age_grp)-1))) %>% 
+    group_by(age_grp, order, year, type) %>% 
+    summarise(km_pp_y = mean(km_pp_y),
+              minute_pp_w = mean(minute_pp_w))
+  return(evo)
+}
+
+plot_evo_milage = function(evo, y_vec = c(2021, 2030, 2040, 2050), age_low = 14, age_sup=84,
+                           scale_y_lab){
+  #evo is an output of the evo_milage() function
+  evo = evo[evo$year %in% y_vec, ] %>% 
+    filter (order>age_low & order<=age_sup) %>% 
+    ungroup()
+  evo$year = as.factor(evo$year)
+  pplot = evo %>%  
+    ggplot() + geom_bar(aes(age_grp,
+                            y = minute_pp_w,
+                            fill = year),
+                        stat = "identity",
+                        position = "dodge2", 
+                        width = 0.7) +
+    scale_y_continuous(name = scale_y_lab)+
+    theme_minimal() +
+    xlab("Age group") +
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          text = element_text(size = 15),
+          axis.text.x = element_text(angle = 60, hjust=1))
+  return(pplot)
+}
+
+y_vec_3 = c(2025, 2035, 2045)
+y_vec_6 = c(2025, 2030, 2035, 2040,2045, 2050)
+
+
+res_evo = evo_milage(res)
+evo_walk = res_evo %>% filter(type =="Walk")
+evo_cycle = res_evo %>% filter(type =="Bike")
+evo_Ecycle = res_evo %>% filter(type =="E-bike")
+
+p_evo_walk = plot_evo_milage(evo = evo_walk,y_vec = y_vec_3,
+                             scale_y_lab = "")
+
+p_evo_cycle = plot_evo_milage(evo = evo_cycle,y_vec = y_vec_3,
+                              scale_y_lab = "")
+# scale_y_lab = "Weekly cycling duration (minutes)")
+
+evo_ecycle = evo_milage(res_ecycle)
+p_evo_ecycle = plot_evo_milage(evo = evo_Ecycle, y_vec = y_vec_3,
+                               scale_y_lab = "")
+# scale_y_lab = "Weekly e-cycling duration (minutes)")
+
+p_evo_walk
+p_evo_cycle
+p_evo_ecycle
+
+
+p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,
+               labels = c("A", "B", "C"),
+               ncol = 1)
