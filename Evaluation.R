@@ -1,5 +1,6 @@
 library(ggplot2)
 library(ggpubr)
+library(forcats)
 source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
