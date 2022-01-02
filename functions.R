@@ -465,7 +465,8 @@ impact_all_types_v2 = function(df_demo= INSEE_data, # demographic data frame
   
   
   #### return
-  li = list(S1 = S1tab, S0 = S0tab, impact_tot_S1, impact_tot_S0,
+  li = list(S1 = S1tab, S0 = S0tab, 
+            impact_tot_S1=impact_tot_S1, impact_tot_S0=impact_tot_S0,
             life_exp = life_exp)
   
   return(li)

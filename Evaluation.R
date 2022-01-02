@@ -428,3 +428,35 @@ plot_death_age = ggplot(data = evo,
 tiff("deaths per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res=190)
 plot(plot_death_age)
 dev.off()
+
+
+
+##########################################################################################
+######################################################
+####################################
+################## 
+# HERE use the v2 functions : just check consistency with v1 functions first
+
+##################
+impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+                               df_acti= nw_data, # data frame of aggregated active transport volume
+                               target_distri=den, # data frame with the target age-distribution of physical activity
+                               walk_speed=4.8,
+                               cycle_speed = 14,
+                               eCycle_speed = 18,
+                              obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                              #obj_delta = 0,
+                               coef_delta = 1, #coef to give the relative importance of criteria delta
+                               coef_rho=5,
+                               walk_RR = 0.89,
+                               walk_Ref_volume= 168,
+                               cycle_RR = 0.90, 
+                               cycle_Ref_volume = 100,
+                               eCycle_RR= 0.9224138,
+                               eCycle_Ref_volume =100,
+                               age_min = 20, # minimal age to consider health benefits
+                               age_max = 84)
+names(impact)
+impact$life_exp
+
+sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
