@@ -340,22 +340,15 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
       }
     S1tab$km_pp_y_classical = S1tab$km_pp_y_bike*(1-S1tab$rho_a)
     S1tab$km_pp_y_eCycle = S1tab$km_pp_y_bike*S1tab$rho_a
-    # 
-    # S1tab = S1tab %>% 
-    #   select(age, year, pop, deaths, MR, age_grp, yll, 
-    #          total_km_y_w, total_km_y_bike,
-    #          km_pp_y_walk, km_pp_y_bike, km_pp_y_classical, km_pp_y_eCycle) 
-    
+
     S1tab = S1tab %>% 
       select(age, year, pop, deaths, MR, age_grp, yll, 
              km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle) %>% 
       pivot_longer(c(km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle), 
                    names_to = "type",
-                   values_to = "km_pp_y") %>% 
-      mutate(type, fct_recode(type, "Walk" = "km_pp_y_walk"),
-            "Bike" = "km_pp_y_classical",
-            "eCycle" = "km_pp_y_eCycle")
-    
+                   values_to = "km_pp_y") 
+    S1tab$type <- factor(S1tab$type, levels=c("km_pp_y_walk","km_pp_y_classical","km_pp_y_eCycle"), 
+                            labels=c("Walk","Bike", "E-bike" ))
     
     return(S1tab)
 }
