@@ -86,6 +86,8 @@ cycle_Ref_volume <- 100
 cycle_speed <- 14
 cycle_RR = 0.90
 
+cycle_RR_zhao = 0.91^(11.25/5)
+
 # pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
 eCycle_Ref_volume <- 100
 eCycle_speed <-18  # valeur de Bouscasse et al : 18
@@ -93,6 +95,8 @@ eCycle_RR = cycle_RR
 METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
 eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 
+eCycle_RR_zhao = 1-((1-cycle_RR_zhao)*METeCycle_ratio)
+# value Zhao
 
 
 
@@ -115,7 +119,7 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                coef_rho=5,
                                walk_RR = 0.89,
                                walk_Ref_volume= 168,
-                               cycle_RR = 0.90, 
+                               cycle_RR = cycle_RR_zhao, 
                                cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
                               eCycle_RR= eCycle_RR,
@@ -197,10 +201,12 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                               coef_rho=5,
                               walk_RR = 0.89,
                               walk_Ref_volume= 168,
-                              cycle_RR = 0.90, 
+                              #cycle_RR = 0.90,
+                              cycle_RR = cycle_RR_zhao,
                               cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
-                              eCycle_RR= eCycle_RR,
+                              #eCycle_RR= eCycle_RR,
+                              eCycle_RR= eCycle_RR_zhao,
                               eCycle_Ref_volume =100,
                               age_min = 20, # minimal age to consider health benefits
                               age_max = 84)
