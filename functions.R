@@ -630,3 +630,49 @@ life.expectancy = function(tot_impact, # an object created by the function >impa
   return(data.frame("life_exp_S0" = life_exp_S0, "life_exp_S1"=life_exp_S1, "difference"=diff_exp))
 }
 
+
+
+
+#########################################
+####### functions for plotting the evolution of mileage
+#########################################
+evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
+  
+  evo = data_frame(res$S1) %>% 
+    mutate(age_grp.FACTOR = cut( age, breaks = seq(0,150, by = 5), include.lowest = T, right = F), #gather by age group
+           age_grp = as.character(age_grp.FACTOR), 
+           age_grp = gsub("\\[|\\]|\\(|\\)", "", age_grp),
+           age_grp = gsub(",", "-", age_grp),
+           post = sub(".*-","",age_grp),
+           age_grp = sub("-.*", "", age_grp),
+           age_grp = paste0(age_grp,"-", as.numeric(post)-1),
+           order = as.numeric(substr(age_grp,1,regexpr("-",age_grp)-1))) %>% 
+    group_by(age_grp, order, year, type) %>% 
+    summarise(km_pp_y = mean(km_pp_y),
+              minute_pp_w = mean(minute_pp_w))
+  return(evo)
+}
+
+plot_evo_milage = function(evo, y_vec = c(2021, 2030, 2040, 2050), age_low = 14, age_sup=84,
+                           scale_y_lab){
+  #evo is an output of the evo_milage() function
+  evo = evo[evo$year %in% y_vec, ] %>% 
+    filter (order>age_low & order<=age_sup) %>% 
+    ungroup()
+  evo$year = as.factor(evo$year)
+  pplot = evo %>%  
+    ggplot() + geom_bar(aes(age_grp,
+                            y = minute_pp_w,
+                            fill = year),
+                        stat = "identity",
+                        position = "dodge2", 
+                        width = 0.7) +
+    scale_y_continuous(name = scale_y_lab)+
+    theme_minimal() +
+    xlab("Age group") +
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          text = element_text(size = 15),
+          axis.text.x = element_text(angle = 60, hjust=1))
+  return(pplot)
+}
