@@ -674,3 +674,60 @@ impact_plot = ggarrange (deathplot, yll_plot, euros_plot, ncol = 1)
 tiff("total impact per year.tiff", units="in", width = 5*1.4, height= 5.5*1.4, res=190)
 plot(impact_plot)
 dev.off()
+
+
+
+##############################
+#### plot death prevented by year and age
+##############################
+
+res_per_year = as.data.frame(res_per_year)
+
+evo_res_per_year = res_per_year %>% 
+  mutate(age_grp.FACTOR = cut(age, breaks = seq(0,150, by = 5), include.lowest = T, right = F) , #gather by age group
+         age_grp = as.character(age_grp.FACTOR), 
+         age_grp = gsub("\\[|\\]|\\(|\\)", "", age_grp),
+         age_grp = gsub(",", "-", age_grp),
+         post = sub(".*-","",age_grp),
+         age_grp = sub("-.*", "", age_grp),
+         age_grp = paste0(age_grp,"-", as.numeric(post)-1),
+         order = as.numeric(substr(age_grp,1,regexpr("-",age_grp)-1))) %>% 
+  group_by(age_grp, order, year) %>% 
+  summarise(death_prev = sum(death_prev),
+            death_prev_low = sum(death_prev_low),
+            death_prev_sup =sum(death_prev_sup),
+            yll = sum(yll),
+            yll_low = sum(yll_low),
+            yll_sup = sum(yll_sup))
+
+
+
+y_vec_3 = c(2025, 2035, 2045)
+age_low = 14
+age_sup = 84
+scale_y_lab = "death prevented"
+evo = evo_res_per_year[evo_res_per_year$year %in% y_vec_3, ] %>% 
+  filter (order>age_low & order<=age_sup) %>% 
+  ungroup()
+evo$year = as.factor(evo$year)
+
+
+
+plot_death_age = ggplot(data = evo, 
+                        aes(x=age_grp, y = death_prev, fill = year, ymin = death_prev_low, ymax = death_prev_sup)) +
+  geom_bar(position = position_dodge(), stat = "identity", width=0.7) + 
+  geom_errorbar( position = position_dodge(width = 0.7), colour="black", width=0.4)+
+  scale_y_continuous(name = "Deaths prevented")  +
+  theme_minimal() +
+  xlab("") +
+  ylab("Deaths prevented") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+
+tiff("deaths per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res=190)
+plot(plot_death_age)
+dev.off()
+
+
