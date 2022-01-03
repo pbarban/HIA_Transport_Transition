@@ -118,7 +118,7 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                cycle_RR = 0.90, 
                                cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
-                              eCycle_RR= 0.9224138,
+                              eCycle_RR= eCycle_RR,
                                eCycle_Ref_volume =100,
                                age_min = 20, # minimal age to consider health benefits
                                age_max = 84)
@@ -200,10 +200,12 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                               cycle_RR = 0.90, 
                               cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
-                              eCycle_RR= 0.9224138,
+                              eCycle_RR= eCycle_RR,
                               eCycle_Ref_volume =100,
                               age_min = 20, # minimal age to consider health benefits
                               age_max = 84)
+
+plot(impact$life_exp$year, impact$life_exp$gain, type = "line")
 
 impact_low = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                   df_acti= nw_data, # data frame of aggregated active transport volume
