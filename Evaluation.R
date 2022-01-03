@@ -549,3 +549,128 @@ p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,p_evo_totcycle,
 tiff("evolution volumes per age.tiff", units="in", width = 5*1.4, height= 8*1.4, res=190)
 plot(p2)
 dev.off()
+
+
+##############################
+#### plot updtaed impact by year
+##############################
+RR_cycle_low = 0.94
+RR_cycle_sup = 0.87
+RR_walk_low = 0.96
+RR_walk_sup = 0.83
+
+METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
+eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
+
+impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+                              df_acti= nw_data, # data frame of aggregated active transport volume
+                              target_distri=den, # data frame with the target age-distribution of physical activity
+                              walk_speed=4.8,
+                              cycle_speed = 14,
+                              eCycle_speed = 18,
+                              obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                              #obj_delta = 0,
+                              coef_delta = 1, #coef to give the relative importance of criteria delta
+                              coef_rho=5,
+                              walk_RR = 0.89,
+                              walk_Ref_volume= 168,
+                              cycle_RR = 0.90, 
+                              cycle_Ref_volume = 100,
+                              #eCycle_RR = 0.90,
+                              eCycle_RR= 0.9224138,
+                              eCycle_Ref_volume =100,
+                              age_min = 20, # minimal age to consider health benefits
+                              age_max = 84)
+
+impact_low = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+                                  df_acti= nw_data, # data frame of aggregated active transport volume
+                                  target_distri=den, # data frame with the target age-distribution of physical activity
+                                  walk_speed=4.8,
+                                  cycle_speed = 14,
+                                  eCycle_speed = 18,
+                                  obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                                  #obj_delta = 0,
+                                  coef_delta = 1, #coef to give the relative importance of criteria delta
+                                  coef_rho=5,
+                                  walk_RR = RR_walk_low,
+                                  walk_Ref_volume= 168,
+                                  cycle_RR = RR_cycle_low, 
+                                  cycle_Ref_volume = 100,
+                                  #eCycle_RR = 0.90,
+                                  eCycle_RR= eCycle_RR_low,
+                                  eCycle_Ref_volume =100,
+                                  age_min = 20, # minimal age to consider health benefits
+                                  age_max = 84)
+
+impact_sup = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+                                  df_acti= nw_data, # data frame of aggregated active transport volume
+                                  target_distri=den, # data frame with the target age-distribution of physical activity
+                                  walk_speed=4.8,
+                                  cycle_speed = 14,
+                                  eCycle_speed = 18,
+                                  obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                                  #obj_delta = 0,
+                                  coef_delta = 1, #coef to give the relative importance of criteria delta
+                                  coef_rho=5,
+                                  walk_RR = RR_walk_sup,
+                                  walk_Ref_volume= 168,
+                                  cycle_RR = RR_cycle_sup, 
+                                  cycle_Ref_volume = 100,
+                                  #eCycle_RR = 0.90,
+                                  eCycle_RR= eCycle_RR_sup,
+                                  eCycle_Ref_volume =100,
+                                  age_min = 20, # minimal age to consider health benefits
+                                  age_max = 84)
+
+
+res_per_year =cbind(age = impact$impact_tot_S1$age,
+                    year = impact$impact_tot_S1$year,
+                    death_prev = impact$impact_tot_S1$n_prev_wo_S0_tot,
+                    death_prev_low = impact_low$impact_tot_S1$n_prev_wo_S0_tot,
+                    death_prev_sup = impact_sup$impact_tot_S1$n_prev_wo_S0_tot,
+                    yll = impact$impact_tot_S1$yll_prev_wo_S0_tot,
+                    yll_low = impact_low$impact_tot_S1$yll_prev_wo_S0_tot,
+                    yll_sup = impact_sup$impact_tot_S1$yll_prev_wo_S0_tot)
+res_per_year_group = as.data.frame(res_per_year) %>% 
+  group_by(year) %>% 
+  summarise(death_prev = sum(death_prev),
+            death_prev_low = sum(death_prev_low),
+            death_prev_sup =sum(death_prev_sup),
+            yll = sum(yll),
+            yll_low = sum(yll_low),
+            yll_sup = sum(yll_sup)) %>% 
+  left_join(monetarisation, by = "year")  %>% 
+  mutate(euro = euro_yll*yll,
+         euro_low = euro_yll*yll_low,
+         euro_sup = euro_yll*yll_sup)
+
+
+deathplot = ggplot(data=res_per_year_group)+
+  geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#a6cee3") +
+  ylab("Deaths prevented")+
+  xlab("")+
+  geom_errorbar(aes(x = year,ymin = death_prev_low, ymax = death_prev_sup, width = 0.4)) +
+  theme_minimal()
+deathplot
+
+yll_plot = ggplot(data=res_per_year_group)+
+  geom_bar(aes(x = year, y = yll/1000),stat = "identity", fill="#1f78b4") +
+  ylab("YLL prevented (thousands)")+
+  xlab("Year")+
+  geom_errorbar(aes(x = year,ymin = yll_low/1000, ymax = yll_sup/1000, width = 0.4)) +
+  theme_minimal()
+yll_plot
+
+euros_plot =  ggplot(data=res_per_year_group)+
+  geom_bar(aes(x = year, y = euro/1e9),stat = "identity", fill="#b2df8a") +
+  ylab("Annual benefits (billions)")+
+  xlab("Year")+
+  geom_errorbar(aes(x = year,ymin = euro_low/1e9, ymax = euro_sup/1e9, width = 0.4)) +
+  theme_minimal()
+euros_plot
+
+impact_plot = ggarrange (deathplot, yll_plot, euros_plot, ncol = 1) 
+tiff("total impact per year.tiff", units="in", width = 5*1.4, height= 5.5*1.4, res=190)
+plot(impact_plot)
+dev.off()
