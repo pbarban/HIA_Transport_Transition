@@ -103,7 +103,7 @@ eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 # HERE use the v2 functions : just check consistency with v1 functions first
 
 ##################
-impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                df_acti= nw_data, # data frame of aggregated active transport volume
                                target_distri=den, # data frame with the target age-distribution of physical activity
                                walk_speed=4.8,
@@ -185,7 +185,7 @@ METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
 eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
 eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 
-impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                               df_acti= nw_data, # data frame of aggregated active transport volume
                               target_distri=den, # data frame with the target age-distribution of physical activity
                               walk_speed=4.8,
@@ -205,7 +205,7 @@ impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
                               age_min = 20, # minimal age to consider health benefits
                               age_max = 84)
 
-impact_low = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+impact_low = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                   df_acti= nw_data, # data frame of aggregated active transport volume
                                   target_distri=den, # data frame with the target age-distribution of physical activity
                                   walk_speed=4.8,
@@ -225,7 +225,7 @@ impact_low = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
                                   age_min = 20, # minimal age to consider health benefits
                                   age_max = 84)
 
-impact_sup = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
+impact_sup = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                   df_acti= nw_data, # data frame of aggregated active transport volume
                                   target_distri=den, # data frame with the target age-distribution of physical activity
                                   walk_speed=4.8,
