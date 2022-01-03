@@ -452,14 +452,19 @@ impact = impact_all_types_v2 (df_demo= INSEE_data, # demographic data frame
                                walk_Ref_volume= 168,
                                cycle_RR = 0.90, 
                                cycle_Ref_volume = 100,
-                               eCycle_RR= 0.9224138,
+                              #eCycle_RR = 0.90,
+                              eCycle_RR= 0.9224138,
                                eCycle_Ref_volume =100,
                                age_min = 20, # minimal age to consider health benefits
                                age_max = 84)
 sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
-
 res = impact
 
+
+
+#########################################
+####### plot the evolution of mileage
+#########################################
 evo_milage = function(res){ # res is a resultat table provided by the impact_per_type() function
   
   evo = data_frame(res$S1) %>% 
@@ -510,23 +515,37 @@ evo_walk = res_evo %>% filter(type =="Walk")
 evo_cycle = res_evo %>% filter(type =="Bike")
 evo_Ecycle = res_evo %>% filter(type =="E-bike")
 
+# create evo_tot_cycle
+evo_tot_cycle = evo_cycle %>% 
+  mutate(type = "Total cycle")
+evo_tot_cycle$km_pp_y = evo_cycle$km_pp_y + evo_Ecycle$km_pp_y
+evo_tot_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_Ecycle$minute_pp_w
+
+#### plot evolutions
 p_evo_walk = plot_evo_milage(evo = evo_walk,y_vec = y_vec_3,
-                             scale_y_lab = "")
+                             scale_y_lab = "min/week")
 
 p_evo_cycle = plot_evo_milage(evo = evo_cycle,y_vec = y_vec_3,
-                              scale_y_lab = "")
+                              scale_y_lab = "min/week")
 # scale_y_lab = "Weekly cycling duration (minutes)")
 
-evo_ecycle = evo_milage(res_ecycle)
 p_evo_ecycle = plot_evo_milage(evo = evo_Ecycle, y_vec = y_vec_3,
-                               scale_y_lab = "")
+                               scale_y_lab = "min/week")
 # scale_y_lab = "Weekly e-cycling duration (minutes)")
+p_evo_totcycle = plot_evo_milage(evo = evo_tot_cycle, y_vec = y_vec_3,
+                               scale_y_lab = "min/week")
+
 
 p_evo_walk
 p_evo_cycle
 p_evo_ecycle
+p_evo_totcycle
 
-
-p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,
-               labels = c("A", "B", "C"),
+p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,p_evo_totcycle,
+               labels = c("A: Walk", "B: Bike", "C: E-bike", "D: Total bike"),
+               label.x = 0.74,
                ncol = 1)
+
+tiff("evolution volumes per age.tiff", units="in", width = 5*1.4, height= 8*1.4, res=190)
+plot(p2)
+dev.off()
