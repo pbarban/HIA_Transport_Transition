@@ -186,6 +186,7 @@ RR_walk_low = 0.96
 RR_walk_sup = 0.83
 
 METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-0.90)*METeCycle_ratio)
 eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
 eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 
@@ -365,6 +366,20 @@ dev.off()
 
 ##########################################
 ##################
+# sensitivity analysis
+RR_cycle = 0.90
+RR_cycle_low = 0.94
+RR_cycle_sup = 0.87
+RR_walk = 0.89
+RR_walk_low = 0.96
+RR_walk_sup = 0.83
+
+METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-0.90)*METeCycle_ratio)
+eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
+eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
+
+#
 impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                            df_acti= nw_data, # data frame of aggregated active transport volume
                            target_distri=den, # data frame with the target age-distribution of physical activity
@@ -391,5 +406,30 @@ agg_impact_IC()
 # no_diff in age of bike vs E-bike users
 agg_impact_IC(obj_delta = 0)
 
-# no_diff in age of bike vs E-bike users
-agg_impact_IC(obj_delta = 0)
+# MET ratio ebike/bike same as Egiguren
+METeCycle_ratio_Eg <- 0.9# valeur de Egiguren et al 
+eCycle_RR_Eg = 1-((1-RR_cycle)*METeCycle_ratio_Eg)
+eCycle_RR_low_Eg = 1-((1-RR_cycle_low)*METeCycle_ratio_Eg)
+eCycle_RR_sup_Eg = 1-((1-RR_cycle_sup)*METeCycle_ratio_Eg)
+agg_impact_IC(obj_delta = 6.7,
+              eCycle_RR = eCycle_RR_Eg, 
+              eCycle_RR_low = eCycle_RR_low_Eg,
+              eCycle_RR_sup = eCycle_RR_sup_Eg)
+
+# age max = 74
+agg_impact_IC(age_max = 74)
+
+# avalues of RR_cycle from Zhao 2021 : for 5 MET, RR= 0.91 [0.86-0.96]
+ratio_zhao = 11.25/5 # Zhao RR is for 5 MET, the ref volume we consider represents 11.25 MET
+RR_cycle_zhao = 0.91^ratio_zhao
+RR_cycle_low_zhao =0.96^ratio_zhao
+RR_cycle_sup_zhao =0.86^ratio_zhao
+eCycle_RR_zhao = 1-((1-RR_cycle_zhao)*METeCycle_ratio)
+eCycle_RR_low_zhao = 1-((1-RR_cycle_low_zhao)*METeCycle_ratio)
+eCycle_RR_sup_zhao = 1-((1-RR_cycle_sup_zhao)*METeCycle_ratio)
+agg_impact_IC(cycle_RR =RR_cycle_zhao,
+              cycle_RR_low =RR_cycle_low_zhao,
+              cycle_RR_sup =RR_cycle_sup_zhao,
+              eCycle_RR = eCycle_RR_zhao, 
+              eCycle_RR_low = eCycle_RR_low_zhao,
+              eCycle_RR_sup = eCycle_RR_sup_zhao)

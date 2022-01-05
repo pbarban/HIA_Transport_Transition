@@ -589,7 +589,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
   ))
   # gain in life exp
   print(paste0("Gain in life expectancy, year=", year_output, ": ",
-            round(12*impact$life_exp$gain[impact$life_exp$year ==year_output ],2),
+            round(12*imp_central$life_exp$gain[impact$life_exp$year ==year_output ],2),
             " [",
             round(12*imp_low$life_exp$gain[impact$life_exp$year ==year_output ],2),
             "-",
