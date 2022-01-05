@@ -385,8 +385,11 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                            age_min = 20, # minimal age to consider health benefits
                            age_max = 84)
 
+# main analysis
+agg_impact_IC()
 
+# no_diff in age of bike vs E-bike users
+agg_impact_IC(obj_delta = 0)
 
-
-sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
-
+# no_diff in age of bike vs E-bike users
+agg_impact_IC(obj_delta = 0)

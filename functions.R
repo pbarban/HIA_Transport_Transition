@@ -497,7 +497,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                      walk_RR = 0.89,
                      walk_RR_low = 0.96,
                      walk_RR_sup = 0.83,
-                     walk_Ref_volumesup= 168,
+                     walk_Ref_volume= 168,
                      cycle_RR = 0.90, 
                      cycle_RR_low = 0.94, 
                      cycle_RR_sup = 0.87, 
@@ -510,11 +510,28 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                      age_max = 84,
                      year_output = 2045){
   # function returning aggregated impact estimates + IC
-  imp_central = impact_all_types()
-  imp_low = impact_all_types(walk_RR = walk_RR_low, cycle_RR = cycle_RR_low,
-                             eCycle_RR=eCycle_RR_low)
-  imp_sup = impact_all_types(walk_RR = walk_RR_sup, cycle_RR = cycle_RR_sup,
-                             eCycle_RR=eCycle_RR_sup)
+  imp_central = impact_all_types(df_demo, df_acti, target_distri, 
+                                 walk_speed, cycle_speed, eCycle_speed, 
+                                 obj_delta, coef_delta, coef_rho,
+                                 walk_RR, walk_Ref_volume,
+                                 cycle_RR, cycle_Ref_volume,
+                                 eCycle_RR, eCycle_Ref_volume,
+                                 age_min,age_max)
+  imp_low = impact_all_types(df_demo, df_acti, target_distri, 
+                             walk_speed, cycle_speed, eCycle_speed, 
+                             obj_delta, coef_delta, coef_rho,
+                             walk_RR = walk_RR_low , walk_Ref_volume,
+                             cycle_RR = cycle_RR_low, cycle_Ref_volume,
+                             eCycle_RR = eCycle_RR_low, eCycle_Ref_volume,
+                             age_min,age_max)
+    
+  imp_sup = impact_all_types(df_demo, df_acti, target_distri, 
+                             walk_speed, cycle_speed, eCycle_speed, 
+                             obj_delta, coef_delta, coef_rho,
+                             walk_RR = walk_RR_sup , walk_Ref_volume,
+                             cycle_RR = cycle_RR_sup, cycle_Ref_volume,
+                             eCycle_RR = eCycle_RR_sup, eCycle_Ref_volume,
+                             age_min,age_max)
   
   res_per_year =cbind(age = imp_central$impact_tot_S1$age,
                       year = imp_central$impact_tot_S1$year,
