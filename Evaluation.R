@@ -119,7 +119,7 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                coef_rho=5,
                                walk_RR = 0.89,
                                walk_Ref_volume= 168,
-                               cycle_RR = cycle_RR_zhao, 
+                               cycle_RR = 0.90, 
                                cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
                               eCycle_RR= eCycle_RR,
@@ -201,12 +201,12 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                               coef_rho=5,
                               walk_RR = 0.89,
                               walk_Ref_volume= 168,
-                              #cycle_RR = 0.90,
-                              cycle_RR = cycle_RR_zhao,
+                              cycle_RR = 0.90,
+                           #cycle_RR = cycle_RR_zhao,
                               cycle_Ref_volume = 100,
                               #eCycle_RR = 0.90,
-                              #eCycle_RR= eCycle_RR,
-                              eCycle_RR= eCycle_RR_zhao,
+                              eCycle_RR= eCycle_RR,
+                           # eCycle_RR= eCycle_RR_zhao,
                               eCycle_Ref_volume =100,
                               age_min = 20, # minimal age to consider health benefits
                               age_max = 84)
@@ -360,4 +360,29 @@ tiff("deaths per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res
 plot(plot_death_age)
 dev.off()
 
+
+
+
+##########################################
+##################
+impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
+                           df_acti= nw_data, # data frame of aggregated active transport volume
+                           target_distri=den, # data frame with the target age-distribution of physical activity
+                           walk_speed=4.8,
+                           cycle_speed = 14,
+                           eCycle_speed = 18,
+                           obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                           #obj_delta = 0,
+                           coef_delta = 1, #coef to give the relative importance of criteria delta
+                           coef_rho=5,
+                           walk_RR = 0.89,
+                           walk_Ref_volume= 168,
+                           cycle_RR = cycle_RR_zhao, 
+                           cycle_Ref_volume = 100,
+                           #eCycle_RR = 0.90,
+                           eCycle_RR= eCycle_RR,
+                           eCycle_Ref_volume =100,
+                           age_min = 20, # minimal age to consider health benefits
+                           age_max = 84)
+sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
 
