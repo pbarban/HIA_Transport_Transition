@@ -377,12 +377,16 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                            coef_rho=5,
                            walk_RR = 0.89,
                            walk_Ref_volume= 168,
-                           cycle_RR = cycle_RR_zhao, 
+                           cycle_RR = 0.90, 
                            cycle_Ref_volume = 100,
                            #eCycle_RR = 0.90,
                            eCycle_RR= eCycle_RR,
                            eCycle_Ref_volume =100,
                            age_min = 20, # minimal age to consider health benefits
                            age_max = 84)
+
+
+
+
 sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
 

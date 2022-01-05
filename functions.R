@@ -480,3 +480,103 @@ plot_evo_milage = function(evo, y_vec = c(2021, 2030, 2040, 2050), age_low = 14,
           axis.text.x = element_text(angle = 60, hjust=1))
   return(pplot)
 }
+
+
+######
+# for sensitivity analysis
+
+agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
+                     df_acti= nw_data, # data frame of aggregated active transport volume
+                     target_distri=den, # data frame with the target age-distribution of physical activity
+                     walk_speed=4.8,
+                     cycle_speed = 14,
+                     eCycle_speed = 18,
+                     obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                     coef_delta = 1, #coef to give the relative importance of criteria delta
+                     coef_rho=5,
+                     walk_RR = 0.89,
+                     walk_RR_low = 0.96,
+                     walk_RR_sup = 0.83,
+                     walk_Ref_volumesup= 168,
+                     cycle_RR = 0.90, 
+                     cycle_RR_low = 0.94, 
+                     cycle_RR_sup = 0.87, 
+                     cycle_Ref_volume = 100,
+                     eCycle_RR= 0.9224138,
+                     eCycle_RR_low= 0.9534483,
+                     eCycle_RR_sup= 0.8991379,
+                     eCycle_Ref_volume =100,
+                     age_min = 20, # minimal age to consider health benefits
+                     age_max = 84,
+                     year_output = 2045){
+  # function returning aggregated impact estimates + IC
+  imp_central = impact_all_types()
+  imp_low = impact_all_types(walk_RR = walk_RR_low, cycle_RR = cycle_RR_low,
+                             eCycle_RR=eCycle_RR_low)
+  imp_sup = impact_all_types(walk_RR = walk_RR_sup, cycle_RR = cycle_RR_sup,
+                             eCycle_RR=eCycle_RR_sup)
+  
+  res_per_year =cbind(age = imp_central$impact_tot_S1$age,
+                      year = imp_central$impact_tot_S1$year,
+                      death_prev = imp_central$impact_tot_S1$n_prev_wo_S0_tot,
+                      death_prev_low = imp_low$impact_tot_S1$n_prev_wo_S0_tot,
+                      death_prev_sup = imp_sup$impact_tot_S1$n_prev_wo_S0_tot,
+                      yll = imp_central$impact_tot_S1$yll_prev_wo_S0_tot,
+                      yll_low = imp_low$impact_tot_S1$yll_prev_wo_S0_tot,
+                      yll_sup = imp_sup$impact_tot_S1$yll_prev_wo_S0_tot)
+  res_per_year_group = as.data.frame(res_per_year) %>% 
+    group_by(year) %>% 
+    summarise(death_prev = sum(death_prev),
+              death_prev_low = sum(death_prev_low),
+              death_prev_sup =sum(death_prev_sup),
+              yll = sum(yll),
+              yll_low = sum(yll_low),
+              yll_sup = sum(yll_sup)) %>% 
+    left_join(monetarisation, by = "year")  %>% 
+    mutate(euro = euro_yll*yll,
+           euro_low = euro_yll*yll_low,
+           euro_sup = euro_yll*yll_sup)
+  
+  print(paste0("Annual # death prevented, year=", year_output, ": ",
+    round(res_per_year_group$death_prev[res_per_year_group$year==year_output]),
+    " [",
+    round(res_per_year_group$death_prev_low[res_per_year_group$year==year_output]),
+    "-",
+    round(res_per_year_group$death_prev_sup[res_per_year_group$year==year_output]),
+    "]"
+               ))
+  print(paste0("Cumulative # death prevented, 2021-2050: ",
+               round(sum(res_per_year_group$death_prev)/1000),
+               " [",
+               round(sum(res_per_year_group$death_prev_low)/1000),
+               "-",
+               round(sum(res_per_year_group$death_prev_sup)/1000),
+               "]"
+  ))
+  # benefits
+  print(paste0("Annual health benefits in euros, year=", year_output, ": ",
+               round(res_per_year_group$euro[res_per_year_group$year==year_output] / 1e9),
+               " [",
+               round(res_per_year_group$euro_low[res_per_year_group$year==year_output]/ 1e9),
+               "-",
+               round(res_per_year_group$euro_sup[res_per_year_group$year==year_output]/ 1e9),
+               "]"
+  ))
+  print(paste0("Cumulative # death prevented, 2021-2050: ",
+               round(sum(res_per_year_group$euro)/1e9),
+               " [",
+               round(sum(res_per_year_group$euro_low)/1e9),
+               "-",
+               round(sum(res_per_year_group$euro_sup)/1e9),
+               "]"
+  ))
+  # gain in life exp
+  print(paste0("Gain in life expectancy, year=", year_output, ": ",
+            round(12*impact$life_exp$gain[impact$life_exp$year ==year_output ],2),
+            " [",
+            round(12*imp_low$life_exp$gain[impact$life_exp$year ==year_output ],2),
+            "-",
+            round(12*imp_sup$life_exp$gain[impact$life_exp$year ==year_output ],2),
+            "]"
+  ))
+}
