@@ -435,3 +435,7 @@ agg_impact_IC(cycle_RR =RR_cycle_zhao,
               eCycle_RR = eCycle_RR_zhao, 
               eCycle_RR_low = eCycle_RR_low_zhao,
               eCycle_RR_sup = eCycle_RR_sup_zhao)
+
+
+
+agg_impact_IC(cycle_speed = 15)
