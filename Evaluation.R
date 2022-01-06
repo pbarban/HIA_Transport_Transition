@@ -180,6 +180,8 @@ dev.off()
 ##############################
 #### plot updtaed impact by year
 ##############################
+RR_walk = 0.89
+RR_cycle = 0.90
 RR_cycle_low = 0.94
 RR_cycle_sup = 0.87
 RR_walk_low = 0.96
