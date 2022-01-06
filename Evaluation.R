@@ -7,27 +7,73 @@ source("negaWatt_data.R")
 source("functions.R")
 
 
+#############################################################################################
+###############################
+# set baseline parameters
+###############################
+#############################################################################################
+walk_Ref_volume <- 168
+walk_speed <- 4.8
+walk_RR = 0.89
+
+cycle_Ref_volume <- 100
+cycle_speed <- 14
+cycle_RR = 0.90
+
+cycle_RR_zhao = 0.91^(11.25/5)
+
+# pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
+eCycle_Ref_volume <- 100
+eCycle_speed <-18  # valeur de Bouscasse et al : 18
+eCycle_RR = cycle_RR
+METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
+
+eCycle_RR_zhao = 1-((1-cycle_RR_zhao)*METeCycle_ratio)
+# value Zhao
+
+
+
+
 ###### upload monetarisation YLL
 monetarisation = read.csv2("monetarization_yll.csv", dec=".")
 plot(monetarisation$year, monetarisation$euro_yll, type = 'l')
 # values are not the right one now, will update this
 
 
+
 ###### plot nW data
+prop.eBike_year = data.frame(year = unique(nw_data$year), prop = NA)
+for (i in 1: length(unique(nw_data$year))){
+  yy = unique(nw_data$year)[i]
+  prop.eBike_year$prop[i]= nw_data[nw_data$type=="e_cycle" & nw_data$year == yy, "value"] / 
+    (nw_data[nw_data$type=="tot_cycle" & nw_data$year == yy, "value"])
+}
+prop.eBike_year$prop = as.numeric(prop.eBike_year$prop)
+prop.eBike_year =prop.eBike_year %>% 
+  mutate(average_speed = cycle_speed*(1-prop) + eCycle_speed*prop)
+
+
 str(nw_data)
 nw_data2 = nw_data
 nw_data2$type <- factor(nw_data$type, levels=c("walk","tot_cycle","cycle", "e_cycle"), 
                         labels=c("Walk", "Total cycle","Bike", "E-bike" ))
 #nw_data2 = nw_data2 %>%  filter(year>2021)
 # labels=c("Marche", "Total vélo","vélo", "VAE" ))
-
+nw_data2 = nw_data2 %>% 
+  mutate(speed = case_when(type == "Walk" ~ walk_speed,
+                    type == "Bike" ~ cycle_speed,
+                    type == "E-bike" ~ eCycle_speed))
+nw_data2$speed[is.na(nw_data2$speed)] =   prop.eBike_year$average_speed
+nw_data2 = nw_data2 %>% 
+  mutate(min_pp_w = (60*value/speed) /(365.25/7) )  # weekly minutes
 
 p1 = nw_data2 %>% 
   ggplot() +  
-  geom_line(aes(x = year, y = value/52.1, group = type, col = type, linetype=type, size= type))+
+  geom_line(aes(x = year, y = value/(365.25/7), group = type, col = type, linetype=type, size= type))+
   ylab("km/inhab/week") +
   xlab("") +
-  labs(title = "Trends in active transportation mileage, negaWatt scenario") +
+ # labs(title = "Trends in active transportation mileage, negaWatt scenario") +
  # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", size = 16),
@@ -47,7 +93,31 @@ tiff("Trends_mileage-SnW.tiff", units="in", width = 9*1.4, height= 5*1.4, res=19
 plot(p1)
 dev.off()
 
+p2 = nw_data2 %>% 
+  ggplot() +  
+  geom_line(aes(x = year, y = min_pp_w, group = type, col = type, linetype=type, size= type))+
+  ylab("min/inhab/week") +
+  xlab("") +
+  #labs(title = "Trends in active transportation duration, negaWatt scenario") +
+  # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 16),
+        plot.subtitle = element_text(colour = "#595a5c", size = 12),
+        legend.position="top",
+        legend.key.size = unit(1, 'cm'),
+        legend.text = element_text(size=12),
+        axis.text=element_text(size=12),
+        axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
+  scale_linetype_manual(values=c("solid", "solid","dashed", "dashed"))+
+  scale_color_manual(values=c("#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
+  scale_size_manual(values = c(1.5,1.5, 1, 1))
 
+plot(p2)
+
+P1et2 = ggarrange(p1, p2, ncol = 2)
+tiff("evolution in km and min.tiff", units="in", width = 5*2.2, height= 3*2.2, res=190)
+plot(P1et2)
+dev.off()
 
 #### First add lines corresponding to 0:14 and 85:100 in Denmark data
 dim(Denmark_data)
@@ -71,32 +141,6 @@ den$type = gsub("walking", "walk", den$type)
 #Pierre, n'hésite pas à déplacer et traduire en dplyr si tu souhaites
 
 
-
-
-#############################################################################################
-###############################
-# set parameters
-###############################
-#############################################################################################
-walk_Ref_volume <- 168
-walk_speed <- 4.8
-walk_RR = 0.89
-
-cycle_Ref_volume <- 100
-cycle_speed <- 14
-cycle_RR = 0.90
-
-cycle_RR_zhao = 0.91^(11.25/5)
-
-# pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
-eCycle_Ref_volume <- 100
-eCycle_speed <-18  # valeur de Bouscasse et al : 18
-eCycle_RR = cycle_RR
-METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
-eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
-
-eCycle_RR_zhao = 1-((1-cycle_RR_zhao)*METeCycle_ratio)
-# value Zhao
 
 
 
