@@ -17,16 +17,16 @@ walk_speed <- 4.8
 walk_RR = 0.89
 
 cycle_Ref_volume <- 100
-cycle_speed <- 14
+cycle_speed <- 14.9 # valeur de Egiguren
 cycle_RR = 0.90
 
 cycle_RR_zhao = 0.91^(11.25/5)
 
 # pour l'instant, on utilise les memes parametres VAE/vélo pour retrouver les résultats précédents
 eCycle_Ref_volume <- 100
-eCycle_speed <-18  # valeur de Bouscasse et al : 18
+eCycle_speed <-18.1  # valeur de Bouscasse et al : 18
 eCycle_RR = cycle_RR
-METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
+METeCycle_ratio <- 0.9 # valeur de Egiguren et al : 4.5/5.8
 eCycle_RR = 1-((1-cycle_RR)*METeCycle_ratio)
 
 eCycle_RR_zhao = 1-((1-cycle_RR_zhao)*METeCycle_ratio)
@@ -155,8 +155,8 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                df_acti= nw_data, # data frame of aggregated active transport volume
                                target_distri=den, # data frame with the target age-distribution of physical activity
                                walk_speed=4.8,
-                               cycle_speed = 14,
-                               eCycle_speed = 18,
+                               cycle_speed = cycle_speed,
+                               eCycle_speed = eCycle_speed,
                               obj_delta = 6.7, #targeted age diff btw classical and eBike users
                               #obj_delta = 0,
                                coef_delta = 1, #coef to give the relative importance of criteria delta
@@ -231,8 +231,8 @@ RR_cycle_sup = 0.87
 RR_walk_low = 0.96
 RR_walk_sup = 0.83
 
-METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
-eCycle_RR = 1-((1-0.90)*METeCycle_ratio)
+METeCycle_ratio <- 0.9# valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-RR_cycle)*METeCycle_ratio)
 eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
 eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 
@@ -240,8 +240,8 @@ impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                               df_acti= nw_data, # data frame of aggregated active transport volume
                               target_distri=den, # data frame with the target age-distribution of physical activity
                               walk_speed=4.8,
-                              cycle_speed = 14,
-                              eCycle_speed = 18,
+                              cycle_speed = cycle_speed,
+                              eCycle_speed = eCycle_speed,
                               obj_delta = 6.7, #targeted age diff btw classical and eBike users
                               #obj_delta = 0,
                               coef_delta = 1, #coef to give the relative importance of criteria delta
@@ -264,8 +264,8 @@ impact_low = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                   df_acti= nw_data, # data frame of aggregated active transport volume
                                   target_distri=den, # data frame with the target age-distribution of physical activity
                                   walk_speed=4.8,
-                                  cycle_speed = 14,
-                                  eCycle_speed = 18,
+                                  cycle_speed = cycle_speed,
+                                  eCycle_speed = eCycle_speed,
                                   obj_delta = 6.7, #targeted age diff btw classical and eBike users
                                   #obj_delta = 0,
                                   coef_delta = 1, #coef to give the relative importance of criteria delta
@@ -284,8 +284,8 @@ impact_sup = impact_all_types (df_demo= INSEE_data, # demographic data frame
                                   df_acti= nw_data, # data frame of aggregated active transport volume
                                   target_distri=den, # data frame with the target age-distribution of physical activity
                                   walk_speed=4.8,
-                                  cycle_speed = 14,
-                                  eCycle_speed = 18,
+                                  cycle_speed = cycle_speed,
+                                  eCycle_speed = eCycle_speed,
                                   obj_delta = 6.7, #targeted age diff btw classical and eBike users
                                   #obj_delta = 0,
                                   coef_delta = 1, #coef to give the relative importance of criteria delta
@@ -341,7 +341,7 @@ yll_plot
 
 euros_plot =  ggplot(data=res_per_year_group)+
   geom_bar(aes(x = year, y = euro/1e9),stat = "identity", fill="#b2df8a") +
-  ylab("Annual benefits (billions)")+
+  ylab("Health benefits (billions €)")+
   xlab("Year")+
   geom_errorbar(aes(x = year,ymin = euro_low/1e9, ymax = euro_sup/1e9, width = 0.4)) +
   theme_minimal()
@@ -420,8 +420,8 @@ RR_walk = 0.89
 RR_walk_low = 0.96
 RR_walk_sup = 0.83
 
-METeCycle_ratio <- 4.5/5.8# valeur de Bouscasse et al : 4.5/5.8
-eCycle_RR = 1-((1-0.90)*METeCycle_ratio)
+METeCycle_ratio <- 0.9 # valeur de Bouscasse et al : 4.5/5.8
+eCycle_RR = 1-((1-RR_cycle)*METeCycle_ratio)
 eCycle_RR_low = 1-((1-RR_cycle_low)*METeCycle_ratio)
 eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 
@@ -429,9 +429,9 @@ eCycle_RR_sup = 1-((1-RR_cycle_sup)*METeCycle_ratio)
 impact = impact_all_types (df_demo= INSEE_data, # demographic data frame
                            df_acti= nw_data, # data frame of aggregated active transport volume
                            target_distri=den, # data frame with the target age-distribution of physical activity
-                           walk_speed=4.8,
-                           cycle_speed = 14,
-                           eCycle_speed = 18,
+                           walk_speed=walk_speed,
+                           cycle_speed = cycle_speed,
+                           eCycle_speed = eCycle_speed,
                            obj_delta = 6.7, #targeted age diff btw classical and eBike users
                            #obj_delta = 0,
                            coef_delta = 1, #coef to give the relative importance of criteria delta
@@ -453,14 +453,14 @@ agg_impact_IC()
 agg_impact_IC(obj_delta = 0)
 
 # MET ratio ebike/bike same as Egiguren
-METeCycle_ratio_Eg <- 0.9# valeur de Egiguren et al 
-eCycle_RR_Eg = 1-((1-RR_cycle)*METeCycle_ratio_Eg)
-eCycle_RR_low_Eg = 1-((1-RR_cycle_low)*METeCycle_ratio_Eg)
-eCycle_RR_sup_Eg = 1-((1-RR_cycle_sup)*METeCycle_ratio_Eg)
+METeCycle_ratio_Bou <- 0.78# valeur de Bouscasse et al 
+eCycle_RR_Bou = 1-((1-RR_cycle)*METeCycle_ratio_Bou)
+eCycle_RR_low_Bou = 1-((1-RR_cycle_low)*METeCycle_ratio_Bou)
+eCycle_RR_sup_Bou = 1-((1-RR_cycle_sup)*METeCycle_ratio_Bou)
 agg_impact_IC(obj_delta = 6.7,
-              eCycle_RR = eCycle_RR_Eg, 
-              eCycle_RR_low = eCycle_RR_low_Eg,
-              eCycle_RR_sup = eCycle_RR_sup_Eg)
+              eCycle_RR = eCycle_RR_Bou, 
+              eCycle_RR_low = eCycle_RR_low_Bou,
+              eCycle_RR_sup = eCycle_RR_sup_Bou)
 
 # age max = 74
 agg_impact_IC(age_max = 74)

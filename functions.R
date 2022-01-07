@@ -489,8 +489,8 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                      df_acti= nw_data, # data frame of aggregated active transport volume
                      target_distri=den, # data frame with the target age-distribution of physical activity
                      walk_speed=4.8,
-                     cycle_speed = 14,
-                     eCycle_speed = 18,
+                     cycle_speed = 14.9,
+                     eCycle_speed = 18.1,
                      obj_delta = 6.7, #targeted age diff btw classical and eBike users
                      coef_delta = 1, #coef to give the relative importance of criteria delta
                      coef_rho=5,
@@ -502,9 +502,9 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                      cycle_RR_low = 0.94, 
                      cycle_RR_sup = 0.87, 
                      cycle_Ref_volume = 100,
-                     eCycle_RR= 0.9224138,
-                     eCycle_RR_low= 0.9534483,
-                     eCycle_RR_sup= 0.8991379,
+                     eCycle_RR= 0.91,
+                     eCycle_RR_low= 0.946,
+                     eCycle_RR_sup= 0.883,
                      eCycle_Ref_volume =100,
                      age_min = 20, # minimal age to consider health benefits
                      age_max = 84,
@@ -579,7 +579,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                round(res_per_year_group$euro_sup[res_per_year_group$year==year_output]/ 1e9),
                "]"
   ))
-  print(paste0("Cumulative # death prevented, 2021-2050: ",
+  print(paste0("Cumulative # health benefits, 2021-2050: ",
                round(sum(res_per_year_group$euro)/1e9),
                " [",
                round(sum(res_per_year_group$euro_low)/1e9),
