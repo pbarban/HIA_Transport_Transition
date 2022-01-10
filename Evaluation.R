@@ -66,7 +66,8 @@ nw_data2 = nw_data2 %>%
                     type == "E-bike" ~ eCycle_speed))
 nw_data2$speed[is.na(nw_data2$speed)] =   prop.eBike_year$average_speed
 nw_data2 = nw_data2 %>% 
-  mutate(min_pp_w = (60*value/speed) /(365.25/7) )  # weekly minutes
+  mutate(min_pp_w = (60*value/speed) /(365.25/7),
+         km_pp_w = value/(365.25/7))  # weekly minutes
 
 p1 = nw_data2 %>% 
   ggplot() +  
@@ -115,10 +116,15 @@ p2 = nw_data2 %>%
 plot(p2)
 
 P1et2 = ggarrange(p1, p2, ncol = 2)
-tiff("evolution in km and min.tiff", units="in", width = 5*2.2, height= 3*2.2, res=190)
+tiff("evolution in km and min.tiff", units="in", width = 5*2.2, height= 2.5*2.2, res=190)
 plot(P1et2)
 dev.off()
 
+
+
+##########################################################################################
+######################################################
+#### #### #### #### #### #### #### #### #### #### 
 #### First add lines corresponding to 0:14 and 85:100 in Denmark data
 dim(Denmark_data)
 den = Denmark_data %>% filter(sexe == "Both") ; dim(den)
@@ -174,6 +180,24 @@ sum(impact$impact_tot_S1$n_prev_wo_S0_tot)
 res = impact
 
 
+impact_per_type = res$S1 %>% 
+  group_by(year, type) %>% 
+  summarise(n_tot = sum(n_prev_wo_S0))
+
+tot_25 = sum(impact_per_type$n_tot[impact_per_type$year==2025]); tot_25
+perc_walk = impact_per_type$n_tot[impact_per_type$year==2025 & impact_per_type$type == "Walk"] / tot_25
+perc_bike = impact_per_type$n_tot[impact_per_type$year==2025 & impact_per_type$type == "Bike"]/ tot_25
+perc_ebike = impact_per_type$n_tot[impact_per_type$year==2025 & impact_per_type$type == "E-bike"]/ tot_25
+
+tot_35 = sum(impact_per_type$n_tot[impact_per_type$year==2035]); tot_35
+perc_walk = impact_per_type$n_tot[impact_per_type$year==2035 & impact_per_type$type == "Walk"] / tot_35
+perc_bike = impact_per_type$n_tot[impact_per_type$year==2035 & impact_per_type$type == "Bike"]/ tot_35
+perc_ebike = impact_per_type$n_tot[impact_per_type$year==2035 & impact_per_type$type == "E-bike"]/ tot_35
+
+tot_45 = sum(impact_per_type$n_tot[impact_per_type$year==2045]); tot_45
+perc_walk = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "Walk"] / tot_45
+perc_bike = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "Bike"]/ tot_45
+perc_ebike = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "E-bike"]/ tot_45
 
 #########################################
 ####### plot the evolution of mileage
@@ -193,26 +217,27 @@ evo_tot_cycle$minute_pp_w = evo_cycle$minute_pp_w + evo_Ecycle$minute_pp_w
 
 #### plot evolutions
 p_evo_walk = plot_evo_milage(evo = evo_walk,y_vec = y_vec_3,
-                             scale_y_lab = "min/week")
+                             scale_y_lab = "min/week/inh")
 
 p_evo_cycle = plot_evo_milage(evo = evo_cycle,y_vec = y_vec_3,
-                              scale_y_lab = "min/week")
+                              scale_y_lab = "min/week/inh")
 # scale_y_lab = "Weekly cycling duration (minutes)")
 
 p_evo_ecycle = plot_evo_milage(evo = evo_Ecycle, y_vec = y_vec_3,
-                               scale_y_lab = "min/week")
+                               scale_y_lab = "min/week/inh")
 # scale_y_lab = "Weekly e-cycling duration (minutes)")
 p_evo_totcycle = plot_evo_milage(evo = evo_tot_cycle, y_vec = y_vec_3,
-                               scale_y_lab = "min/week")
+                               scale_y_lab = "min/week/inh")
 
 
 p_evo_walk
+p_evo_totcycle
 p_evo_cycle
 p_evo_ecycle
-p_evo_totcycle
 
-p2 = ggarrange(p_evo_walk, p_evo_cycle, p_evo_ecycle,p_evo_totcycle,
-               labels = c("A: Walk", "B: Bike", "C: E-bike", "D: Total bike"),
+
+p2 = ggarrange(p_evo_walk, p_evo_totcycle, p_evo_cycle, p_evo_ecycle,
+               labels = c("A: Walk", "B: Total bike", "C: Bike", "D: E-bike"),
                label.x = 0.74,
                ncol = 1)
 
@@ -322,6 +347,13 @@ res_per_year_group = as.data.frame(res_per_year) %>%
          euro_low = euro_yll*yll_low,
          euro_sup = euro_yll*yll_sup)
 
+sum(res_per_year_group$yll)
+sum(res_per_year_group$yll_low)
+sum(res_per_year_group$yll_sup)
+
+sum(res_per_year_group$)
+sum(res_per_year_group$yll_low)
+sum(res_per_year_group$yll_sup)
 
 deathplot = ggplot(data=res_per_year_group)+
   geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#a6cee3") +
