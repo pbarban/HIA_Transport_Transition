@@ -182,7 +182,8 @@ res = impact
 
 impact_per_type = res$S1 %>% 
   group_by(year, type) %>% 
-  summarise(n_tot = sum(n_prev_wo_S0))
+  summarise(n_tot = sum(n_prev_wo_S0),
+            yll_tot = sum(yll_prev_wo_S0 ))
 
 tot_25 = sum(impact_per_type$n_tot[impact_per_type$year==2025]); tot_25
 perc_walk = impact_per_type$n_tot[impact_per_type$year==2025 & impact_per_type$type == "Walk"] / tot_25
@@ -198,6 +199,41 @@ tot_45 = sum(impact_per_type$n_tot[impact_per_type$year==2045]); tot_45
 perc_walk = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "Walk"] / tot_45
 perc_bike = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "Bike"]/ tot_45
 perc_ebike = impact_per_type$n_tot[impact_per_type$year==2045 & impact_per_type$type == "E-bike"]/ tot_45
+
+
+tot_overall = sum(impact_per_type$n_tot)
+perc_overall_walk = sum(impact_per_type$n_tot[impact_per_type$type == "Walk"])/tot_overall;perc_overall_walk
+perc_overall_bike = sum(impact_per_type$n_tot[impact_per_type$type == "Bike"])/tot_overall;perc_overall_bike
+perc_overall_Ebike = sum(impact_per_type$n_tot[impact_per_type$type == "E-bike"])/tot_overall;perc_overall_Ebike
+
+yll_overall = sum(impact_per_type$yll_tot)
+perc_overall_walk_yll = sum(impact_per_type$yll_tot[impact_per_type$type == "Walk"])/yll_overall;perc_overall_walk_yll
+perc_overall_bike_yll = sum(impact_per_type$yll_tot[impact_per_type$type == "Bike"])/yll_overall;perc_overall_bike_yll
+perc_overall_Ebike_yll = sum(impact_per_type$yll_tot[impact_per_type$type == "E-bike"])/yll_overall;perc_overall_Ebike_yll
+
+
+deathprer_type = ggplot(data=impact_per_type)+
+  geom_bar(aes(x = year, y = n_tot, fill = type),stat = "identity") +
+  ylab("Deaths prevented")+
+  xlab("")+
+  theme_minimal()
+plot(deathprer_type)
+yllprer_type = ggplot(data=impact_per_type)+
+  geom_bar(aes(x = year, y = yll_tot, fill = type),stat = "identity") +
+  ylab("YLL prevented")+
+  xlab("")+
+  theme_minimal()
+plot(yllprer_type)
+
+p_impact_type = ggarrange(deathprer_type, yllprer_type,ncol = 1)
+tiff("impact per type.tiff", units="in",width = 5*1.4, height= 5.5*1.4, res=190)
+plot(p_impact_type)
+dev.off()
+
+
+
+
+
 
 #########################################
 ####### plot the evolution of mileage
@@ -351,9 +387,6 @@ sum(res_per_year_group$yll)
 sum(res_per_year_group$yll_low)
 sum(res_per_year_group$yll_sup)
 
-sum(res_per_year_group$)
-sum(res_per_year_group$yll_low)
-sum(res_per_year_group$yll_sup)
 
 deathplot = ggplot(data=res_per_year_group)+
   geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#a6cee3") +
@@ -373,7 +406,7 @@ yll_plot
 
 euros_plot =  ggplot(data=res_per_year_group)+
   geom_bar(aes(x = year, y = euro/1e9),stat = "identity", fill="#b2df8a") +
-  ylab("Health benefits (billions €)")+
+  ylab("Health benefits (billion €)")+
   xlab("Year")+
   geom_errorbar(aes(x = year,ymin = euro_low/1e9, ymax = euro_sup/1e9, width = 0.4)) +
   theme_minimal()
@@ -385,6 +418,21 @@ plot(impact_plot)
 dev.off()
 
 
+#########################################
+####### plot gain in life_exp
+#########################################
+impact_life_exp = cbind(impact$life_exp, gain_low = impact_low$life_exp$gain, gain_sup = impact_sup$life_exp$gain )
+
+plot_life_exp = ggplot(data=impact_life_exp)+
+  geom_line(aes(x=year, y = gain*12), col= "red")+
+  geom_ribbon(aes(x= year, ymin = gain_low*12, ymax = gain_sup*12), alpha = 0.1)+
+  ylab("Gain in life expectancy (months)")+
+  xlab("Year")
+plot(plot_life_exp)
+
+tiff("life expectancy plot.tiff", units="in", width = 5*1.4, height= 3.2*1.4, res=190)
+plot(plot_life_exp)
+dev.off()
 
 ##############################
 #### plot death prevented by year and age
