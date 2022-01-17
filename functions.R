@@ -554,6 +554,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
            euro_low = euro_yll*yll_low,
            euro_sup = euro_yll*yll_sup)
   
+  # deaths prevented
   print(paste0("Annual # death prevented, year=", year_output, ": ",
     round(res_per_year_group$death_prev[res_per_year_group$year==year_output]),
     " [",
@@ -562,7 +563,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
     round(res_per_year_group$death_prev_sup[res_per_year_group$year==year_output]),
     "]"
                ))
-  print(paste0("Cumulative # death prevented, 2021-2050: ",
+  print(paste0("Cumulative # death prevented (thousand), 2021-2050: ",
                round(sum(res_per_year_group$death_prev)/1000),
                " [",
                round(sum(res_per_year_group$death_prev_low)/1000),
@@ -570,16 +571,35 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                round(sum(res_per_year_group$death_prev_sup)/1000),
                "]"
   ))
-  # benefits
-  print(paste0("Annual health benefits in euros, year=", year_output, ": ",
-               round(res_per_year_group$euro[res_per_year_group$year==year_output] / 1e9),
+  
+  # YLL prevented
+  print(paste0("Annual # YLL prevented (thousand), year=", year_output, ": ",
+               round(res_per_year_group$yll[res_per_year_group$year==year_output]/1000),
                " [",
-               round(res_per_year_group$euro_low[res_per_year_group$year==year_output]/ 1e9),
+               round(res_per_year_group$yll_low[res_per_year_group$year==year_output]/1000),
                "-",
-               round(res_per_year_group$euro_sup[res_per_year_group$year==year_output]/ 1e9),
+               round(res_per_year_group$yll_sup[res_per_year_group$year==year_output]/1000),
                "]"
   ))
-  print(paste0("Cumulative # health benefits, 2021-2050: ",
+  print(paste0("Cumulative # YLL prevented (million), 2021-2050: ",
+               round(sum(res_per_year_group$yll)/1e6, digits = 2),
+               " [",
+               round(sum(res_per_year_group$yll_low)/1e6, digits = 2),
+               "-",
+               round(sum(res_per_year_group$yll_sup)/1e6, digits = 2),
+               "]"
+  ))
+  
+  # benefits
+  print(paste0("Annual health benefits in billion euros, year=", year_output, ": ",
+               round(res_per_year_group$euro[res_per_year_group$year==year_output] / 1e9, digits = 1),
+               " [",
+               round(res_per_year_group$euro_low[res_per_year_group$year==year_output]/ 1e9, digits = 1),
+               "-",
+               round(res_per_year_group$euro_sup[res_per_year_group$year==year_output]/ 1e9, digits = 1),
+               "]"
+  ))
+  print(paste0("Cumulative  health benefits in billion euros, 2021-2050: ",
                round(sum(res_per_year_group$euro)/1e9),
                " [",
                round(sum(res_per_year_group$euro_low)/1e9),
