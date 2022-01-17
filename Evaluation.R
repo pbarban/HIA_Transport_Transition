@@ -435,10 +435,32 @@ plot_death_age = ggplot(data = evo,
         text = element_text(size = 15),
         axis.text.x = element_text(angle = 60, hjust=1))
 
-tiff("deaths per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res=190)
-plot(plot_death_age)
+plot_yll_age = ggplot(data = evo, 
+                        aes(x=age_grp, y = yll, fill = year, ymin = yll_low, ymax = yll_sup)) +
+  geom_bar(position = position_dodge(), stat = "identity", width=0.7) + 
+  geom_errorbar( position = position_dodge(width = 0.7), colour="black", width=0.4)+
+  scale_y_continuous(name = "YLL prevented")  +
+  theme_minimal() +
+  xlab("") +
+  ylab("YLL prevented") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        text = element_text(size = 15),
+        axis.text.x = element_text(angle = 60, hjust=1))
+
+
+impact_per_age_plot = ggarrange (plot_death_age, plot_yll_age, ncol = 1) 
+tiff("total impact per age and year.tiff", units="in", width = 5*1.4, height= 6.5*1.4, res=190)
+plot(impact_per_age_plot)
 dev.off()
 
+
+tiff("deaths and yll per age and year.tiff", units="in", width = 5*2, height= 2.5*2, res=190)
+
+
+dev.off()
+
+plot(plot_yll_age)
 
 
 
