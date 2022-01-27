@@ -390,7 +390,7 @@ sum(res_per_year_group$yll_sup)
 
 deathplot = ggplot(data=res_per_year_group)+
   geom_bar(aes(x = year, y = death_prev),stat = "identity", fill="#a6cee3") +
-  ylab("Deaths prevented")+
+  ylab("Premature deaths prevented")+
   xlab("")+
   geom_errorbar(aes(x = year,ymin = death_prev_low, ymax = death_prev_sup, width = 0.4)) +
   theme_minimal()

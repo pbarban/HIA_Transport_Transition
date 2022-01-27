@@ -7,7 +7,8 @@ pacman::p_load(dplyr,
                imputeTS)
 
 #data cleaning
-Pop.proj = download_INSEE("SP19") 
+Pop.proj = download_INSEE("SP03") 
+#Pop.proj = download_INSEE("SP19") 
 
 Mortality.rate = download_INSEE("SD01") 
 
