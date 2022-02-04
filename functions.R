@@ -14,9 +14,148 @@ test_fun = function(x) {
 # Also cleaned the dataframe and give a long output instead of wide
 # Option both always set as TRUE, add together women and men 
 
-scenario = "SP01"
+########################################################################################
 
-download_INSEE = function(scenario = "SP01", both = T){
+download_INSEE <- function(FEC = "bas",
+                           ESP = "cent",
+                           MIG = "cent"){
+  
+  if (!require("pacman")) install.packages("pacman")
+  pacman::p_load(readxl,
+                 tidyr)
+
+
+id = 2517966
+
+scenario = paste0("FEC",FEC,"ESP",ESP,"MIG",MIG)
+
+temp <-  tempfile()
+
+dataURL <- paste0("https://www.insee.fr/fr/statistiques/fichier/",id,"/projpop0760_",scenario,".xls")
+download.file(dataURL, destfile=temp, mode='wb')
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+#### #### #### ####           pop            #### #### #### #### 
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+
+data_pop_tot <- readxl::read_excel(temp, sheet = "populationTot", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "pop") %>% 
+  mutate(sexe = "Both")
+
+data_pop_F <- readxl::read_excel(temp, sheet = "populationF", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "pop") %>% 
+  mutate(sexe = "Female")
+
+data_pop_H <- readxl::read_excel(temp, sheet = "populationH", skip = 4, col_names = TRUE) %>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "pop") %>% 
+  mutate(sexe = "Male")
+
+all_data_pop <- rbind(data_pop_tot, data_pop_F) %>% 
+  rbind(data_pop_H)
+  
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+#### #### #### ####           décès          #### #### #### #### 
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+
+data_deaths_tot <- readxl::read_excel(temp, sheet = "nbre_deces", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "deaths") %>% 
+  mutate(sexe = "Both")
+
+data_deaths_F <- readxl::read_excel(temp, sheet = "nbre_decesF", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "deaths") %>% 
+  mutate(sexe = "Female")
+
+data_deaths_H <- readxl::read_excel(temp, sheet = "nbre_decesH", skip = 4, col_names = TRUE) %>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "deaths") %>% 
+  mutate(sexe = "Male")
+
+all_data_deaths <- rbind(data_deaths_tot, data_deaths_F) %>% 
+  rbind(data_deaths_H)
+
+all_data <- merge(all_data_pop, all_data_deaths, by = c("age", "year","sexe"))
+
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+#### #### #### ####          Mortalité       #### #### #### #### 
+#### #### #### #### #### #### #### #### #### #### #### #### #### 
+
+data_mortalite_F <- readxl::read_excel(temp, sheet = "hyp_mortaliteF", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "MR") %>% 
+  mutate(sexe = "Female")
+
+data_mortalite_H <- readxl::read_excel(temp, sheet = "hyp_mortaliteH", skip = 4, col_names = TRUE) %>% 
+  rename( "age" = starts_with("Âge")) %>% 
+  mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+  na.omit() %>% 
+  mutate(across(.cols = c(everything()),  as.numeric))%>% 
+  pivot_longer(!c(age),
+               names_to = "year",
+               values_to = "MR") %>% 
+  mutate(sexe = "Male")
+
+all_data_MR <- rbind(data_mortalite_H, data_mortalite_F)
+
+data_mortalite_Both <- all_data_MR %>% 
+  group_by(age, year) %>% 
+  summarise(MR = mean(MR)) %>% 
+  ungroup()%>% 
+  mutate(sexe = "Both")
+
+all_data_MR <- all_data_MR %>% 
+  rbind(data_mortalite_Both)
+
+
+all_data <- merge(all_data, all_data_MR, by = c("age", "year","sexe")) %>% 
+  mutate(MR_manual = deaths/pop)
+
+return(all_data)
+}
+
+
+########################################################################################
+
+download_INSEE2 = function(scenario = "SP01", both = T){
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(readxl,
                  tidyr)
