@@ -23,8 +23,7 @@ download_INSEE <- function(FEC = "bas",
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(readxl,
                  tidyr)
-
-
+  
 id = 2517966
 
 scenario = paste0("FEC",FEC,"ESP",ESP,"MIG",MIG)
@@ -37,6 +36,7 @@ download.file(dataURL, destfile=temp, mode='wb')
 #### #### #### #### #### #### #### #### #### #### #### #### #### 
 #### #### #### ####           pop            #### #### #### #### 
 #### #### #### #### #### #### #### #### #### #### #### #### #### 
+
 
 data_pop_tot <- readxl::read_excel(temp, sheet = "populationTot", skip = 4, col_names = TRUE) %>% 
   rename( "age" = ends_with("janvier")) %>% 
@@ -76,7 +76,7 @@ all_data_pop <- rbind(data_pop_tot, data_pop_F) %>%
 #### #### #### #### #### #### #### #### #### #### #### #### #### 
 
 data_deaths_tot <- readxl::read_excel(temp, sheet = "nbre_deces", skip = 4, col_names = TRUE)%>% 
-  rename( "age" = ends_with("janvier")) %>% 
+  rename( "age" = ends_with("e")) %>% 
   mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
   na.omit() %>% 
   mutate(across(.cols = c(everything()),  as.numeric))%>% 
@@ -86,7 +86,7 @@ data_deaths_tot <- readxl::read_excel(temp, sheet = "nbre_deces", skip = 4, col_
   mutate(sexe = "Both")
 
 data_deaths_F <- readxl::read_excel(temp, sheet = "nbre_decesF", skip = 4, col_names = TRUE)%>% 
-  rename( "age" = ends_with("janvier")) %>% 
+  rename( "age" = ends_with("e")) %>% 
   mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
   na.omit() %>% 
   mutate(across(.cols = c(everything()),  as.numeric))%>% 
@@ -95,8 +95,8 @@ data_deaths_F <- readxl::read_excel(temp, sheet = "nbre_decesF", skip = 4, col_n
                values_to = "deaths") %>% 
   mutate(sexe = "Female")
 
-data_deaths_H <- readxl::read_excel(temp, sheet = "nbre_decesH", skip = 4, col_names = TRUE) %>% 
-  rename( "age" = ends_with("janvier")) %>% 
+data_deaths_H <- readxl::read_excel(temp, sheet = "nbre_decesH", skip = 4, col_names = TRUE)%>% 
+  rename( "age" = ends_with("e")) %>% 
   mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
   na.omit() %>% 
   mutate(across(.cols = c(everything()),  as.numeric))%>% 
@@ -115,7 +115,7 @@ all_data <- merge(all_data_pop, all_data_deaths, by = c("age", "year","sexe"))
 #### #### #### #### #### #### #### #### #### #### #### #### #### 
 
 data_mortalite_F <- readxl::read_excel(temp, sheet = "hyp_mortaliteF", skip = 4, col_names = TRUE)%>% 
-  rename( "age" = ends_with("janvier")) %>% 
+  rename( "age" = ends_with("e")) %>% 
   mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
   na.omit() %>% 
   mutate(across(.cols = c(everything()),  as.numeric))%>% 
@@ -125,7 +125,7 @@ data_mortalite_F <- readxl::read_excel(temp, sheet = "hyp_mortaliteF", skip = 4,
   mutate(sexe = "Female")
 
 data_mortalite_H <- readxl::read_excel(temp, sheet = "hyp_mortaliteH", skip = 4, col_names = TRUE) %>% 
-  rename( "age" = ends_with("janvier")) %>% 
+  rename( "age" = ends_with("e")) %>% 
   mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
   na.omit() %>% 
   mutate(across(.cols = c(everything()),  as.numeric))%>% 

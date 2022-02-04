@@ -49,6 +49,9 @@ pacman::p_load(dplyr,
                  group = sexe,
                  color = sexe ))+
    theme(axis.text.x = element_text(angle = 90))
+ 
+ 
+ 
   
 
 # calculate life expectancy
