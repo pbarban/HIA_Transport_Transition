@@ -26,10 +26,6 @@ pacman::p_load(dplyr,
     #     MR = ifelse(MR > 1 | pop == 0, 1, MR)) %>% # Some MR are >1, not exactly sure why...
  #filter(age<101)  # for simplicity, delete all ages >100
   
-
-reprex('INSEE_data =   download_INSEE(FEC = "bas",ESP = "cent",MIG = "cent")')
-  
-  
   INSEE_data <-  download_INSEE(FEC = "bas",
                                 ESP = "cent",
                                 MIG = "cent") %>% 
