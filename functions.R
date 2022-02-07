@@ -14,9 +14,148 @@ test_fun = function(x) {
 # Also cleaned the dataframe and give a long output instead of wide
 # Option both always set as TRUE, add together women and men 
 
-scenario = "SP01"
+########################################################################################
 
-download_INSEE = function(scenario = "SP01", both = T){
+download_INSEE <- function(FEC = "bas",
+                           ESP = "cent",
+                           MIG = "cent"){
+  
+  if (!require("pacman")) install.packages("pacman")
+  pacman::p_load(readxl,
+                 tidyr)
+  
+  id = 2517966
+  
+  scenario = paste0("FEC",FEC,"ESP",ESP,"MIG",MIG)
+  
+  temp <-  tempfile()
+  
+  dataURL <- paste0("https://www.insee.fr/fr/statistiques/fichier/",id,"/projpop0760_",scenario,".xls")
+  download.file(dataURL, destfile=temp, mode='wb')
+  
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  #### #### #### ####           pop            #### #### #### #### 
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  
+  
+  data_pop_tot <- readxl::read_excel(temp, sheet = "populationTot", skip = 4, col_names = TRUE) %>% 
+    rename( "age" = ends_with("janvier")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "pop") %>% 
+    mutate(sexe = "Both")
+  
+  data_pop_F <- readxl::read_excel(temp, sheet = "populationF", skip = 4, col_names = TRUE)%>% 
+    rename( "age" = ends_with("janvier")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "pop") %>% 
+    mutate(sexe = "Female")
+  
+  data_pop_H <- readxl::read_excel(temp, sheet = "populationH", skip = 4, col_names = TRUE) %>% 
+    rename( "age" = ends_with("janvier")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "pop") %>% 
+    mutate(sexe = "Male")
+  
+  all_data_pop <- rbind(data_pop_tot, data_pop_F) %>% 
+    rbind(data_pop_H)
+  
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  #### #### #### ####           décès          #### #### #### #### 
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  
+  data_deaths_tot <- readxl::read_excel(temp, sheet = "nbre_deces", skip = 4, col_names = TRUE)%>% 
+    rename( "age" = ends_with("e")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "deaths") %>% 
+    mutate(sexe = "Both")
+  
+  data_deaths_F <- readxl::read_excel(temp, sheet = "nbre_decesF", skip = 4, col_names = TRUE)%>% 
+    rename( "age" = ends_with("e")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "deaths") %>% 
+    mutate(sexe = "Female")
+  
+  data_deaths_H <- readxl::read_excel(temp, sheet = "nbre_decesH", skip = 4, col_names = TRUE)%>% 
+    rename( "age" = ends_with("e")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "deaths") %>% 
+    mutate(sexe = "Male")
+  
+  all_data_deaths <- rbind(data_deaths_tot, data_deaths_F) %>% 
+    rbind(data_deaths_H)
+  
+  all_data <- merge(all_data_pop, all_data_deaths, by = c("age", "year","sexe"))
+  
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  #### #### #### ####          Mortalité       #### #### #### #### 
+  #### #### #### #### #### #### #### #### #### #### #### #### #### 
+  
+  data_mortalite_F <- readxl::read_excel(temp, sheet = "hyp_mortaliteF", skip = 4, col_names = TRUE)%>% 
+    rename( "age" = ends_with("e")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "MR") %>% 
+    mutate(sexe = "Female")
+  
+  data_mortalite_H <- readxl::read_excel(temp, sheet = "hyp_mortaliteH", skip = 4, col_names = TRUE) %>% 
+    rename( "age" = ends_with("e")) %>% 
+    mutate(age = as.numeric(gsub("([0-9]+).*$", "\\1", age))) %>% 
+    na.omit() %>% 
+    mutate(across(.cols = c(everything()),  as.numeric))%>% 
+    pivot_longer(!c(age),
+                 names_to = "year",
+                 values_to = "MR") %>% 
+    mutate(sexe = "Male")
+  
+  all_data_MR <- rbind(data_mortalite_H, data_mortalite_F)
+  
+  data_mortalite_Both <- all_data_MR %>% 
+    group_by(age, year) %>% 
+    summarise(MR = mean(MR)) %>% 
+    ungroup()%>% 
+    mutate(sexe = "Both")
+  
+  all_data_MR <- all_data_MR %>% 
+    rbind(data_mortalite_Both)
+  
+  
+  all_data <- merge(all_data, all_data_MR, by = c("age", "year","sexe")) %>% 
+    mutate(MR_manual = deaths/pop)
+  
+  return(all_data)
+}
+
+
+########################################################################################
+
+download_INSEE2 = function(scenario = "SP01", both = T){
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(readxl,
                  tidyr)
@@ -38,24 +177,24 @@ download_INSEE = function(scenario = "SP01", both = T){
   data <- readxl::read_excel(temp, skip = 4, col_names = TRUE)
   
   if(both == T){
-  data_cleaned = data %>% 
-    na.omit() %>% 
-    rename( "age" = starts_with("AGE")) %>% 
-    mutate(age = ifelse(substr(age, nchar(age), nchar(age)) == "+",
-                        gsub('.{1}$', '', age),
-                        age),
-           sexe = ifelse(SEXE == "1", "Male", "Female")) %>% 
-    mutate(across(.cols = c(everything(), - sexe),  as.numeric)) %>% 
-    select(-SEXE) %>% 
-    pivot_longer(!c(age, sexe),
-                 names_to = "year",
-                 values_to = all_of(type) ) %>% 
-    pivot_wider(names_from = sexe,
-                values_from = all_of(type)) %>% 
-    mutate(Both = Female + Male) %>% 
-    pivot_longer(!c(age, year),
-                 names_to = "sexe",
-                 values_to = all_of(type))
+    data_cleaned = data %>% 
+      na.omit() %>% 
+      rename( "age" = starts_with("AGE")) %>% 
+      mutate(age = ifelse(substr(age, nchar(age), nchar(age)) == "+",
+                          gsub('.{1}$', '', age),
+                          age),
+             sexe = ifelse(SEXE == "1", "Male", "Female")) %>% 
+      mutate(across(.cols = c(everything(), - sexe),  as.numeric)) %>% 
+      select(-SEXE) %>% 
+      pivot_longer(!c(age, sexe),
+                   names_to = "year",
+                   values_to = all_of(type) ) %>% 
+      pivot_wider(names_from = sexe,
+                  values_from = all_of(type)) %>% 
+      mutate(Both = Female + Male) %>% 
+      pivot_longer(!c(age, year),
+                   names_to = "sexe",
+                   values_to = all_of(type))
   }
   
   else{
@@ -99,7 +238,7 @@ life_exp = function(df, MR ,age){
 
 # Get population demographic pyramid 
 pop_pyramid = function(country,year){
-   temp <-  tempfile()
+  temp <-  tempfile()
   
   if(country == "Denmark"){
     id = 208
@@ -177,7 +316,7 @@ optimize_rho_a = function(par = c(a, b), tab,
                           obj_rho = obj_rho,
                           coef_delta = 1, #coef to give the relative importance of criteria delta
                           coef_rho=5 #coef to give the relative importance of criteria rho
-                  ){
+){
   tab$rho_a = par[1]*tab$age+par[2]
   tab$rho_a[tab$rho_a<=0] = 0.001
   tab$rho_a[tab$rho_a>=1] = 0.90 #rho_a is the vector of proportion of KM cycled with eBike per age
@@ -224,142 +363,142 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
                              obj_delta = 6.7, #targeted age diff btw classical and eBike users
                              coef_delta = 1, #coef to give the relative importance of criteria delta
                              coef_rho=5
-  ){
+){
+  
+  #####
+  # 1) expand df_acti data
+  exp_acti = select(df_demo, year, p_tot) %>% 
+    right_join(df_acti, by = "year") %>% 
+    rename(km_pp_y = value) %>% 
+    mutate(total_km_y = p_tot*km_pp_y,
+           speed = case_when(type == "walk" ~ walk_speed,
+                             type == "cycle" ~ cycle_speed,
+                             type == "e_cycle" ~ eCycle_speed),
+           minute_pp_w = (60*km_pp_y /speed) / (365.25/7))  # weekly minutes
+  
+  # 1.1) calculate prop.eBike_year
+  prop.eBike_year = data.frame(year = unique(df_acti$year), prop = NA)
+  for (i in 1: length(unique(df_acti$year))){
+    yy = unique(df_acti$year)[i]
+    prop.eBike_year$prop[i]= df_acti[df_acti$type=="e_cycle" & df_acti$year == yy, "value"] / 
+      (df_acti[df_acti$type=="tot_cycle" & df_acti$year == yy, "value"])
+  }
+  
+  #####
+  #  2) allocates the aggregated volume of walking across ages
+  acti =  exp_acti %>% filter(type == "walk")
+  target = target_distri %>% filter(type == "walk")
+  
+  # 2.1) in S1, the scenario assessed, calculate the km_w per person
+  S1tab = df_demo %>% filter(sexe == "Both")
+  S1tab = S1tab %>% arrange(year)
+  S1tab$rho_w = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y_w = acti$total_km_y[match(S1tab$year, acti$year)]
+  
+  # 2.2) creat sum(rho*pop) for each year
+  tmp = S1tab %>% group_by(year) %>% 
+    mutate(rho_pop = rho_w*pop,
+           sum_rho_pop = sum(rho_pop))
+  sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+  S1tab$km_pp_y_walk = S1tab$total_km_y_w*S1tab$rho_w/sum_rho_pop
+  
+  
+  #####
+  # 3) allocates the global (ie cycling + eBike) volume of cycling across ages
+  acti =  exp_acti %>% filter(type == "tot_cycle")
+  target = target_distri %>% filter(type == "cycle")
+  
+  # 3.1) in S1, the scenario assessed, calculate the km_w per person
+  S1tab$rho_bike = as.numeric(target$rho[match(S1tab$age, target$age)])
+  S1tab$total_km_y_bike = acti$total_km_y[match(S1tab$year, acti$year)]
+  
+  # 3.2) creat sum(rho*pop) for each year
+  tmp = S1tab %>% group_by(year) %>% 
+    mutate(rho_pop = rho_bike*pop,
+           sum_rho_pop = sum(rho_pop))
+  sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
+  S1tab$km_pp_y_bike = S1tab$total_km_y_bike*S1tab$rho_bike/sum_rho_pop
+  
+  
+  #####
+  # 4) allocate km_cycle btw cycle and eBike to allow delta_age
+  S1tab$rho_a = NA
+  for (i in 1: length(unique(S1tab$year))){
+    yy = unique(S1tab$year)[i]
     
-    #####
-    # 1) expand df_acti data
-    exp_acti = select(df_demo, year, p_tot) %>% 
-      right_join(df_acti, by = "year") %>% 
-      rename(km_pp_y = value) %>% 
-      mutate(total_km_y = p_tot*km_pp_y,
-             speed = case_when(type == "walk" ~ walk_speed,
-                               type == "cycle" ~ cycle_speed,
-                               type == "e_cycle" ~ eCycle_speed),
-             minute_pp_w = (60*km_pp_y /speed) / (365.25/7))  # weekly minutes
+    dt = S1tab %>% 
+      filter(year == yy) 
     
-    # 1.1) calculate prop.eBike_year
-    prop.eBike_year = data.frame(year = unique(df_acti$year), prop = NA)
-    for (i in 1: length(unique(df_acti$year))){
-      yy = unique(df_acti$year)[i]
-      prop.eBike_year$prop[i]= df_acti[df_acti$type=="e_cycle" & df_acti$year == yy, "value"] / 
-        (df_acti[df_acti$type=="tot_cycle" & df_acti$year == yy, "value"])
+    obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
+    
+    if(obj_delta == 0){ # if we assume no age difference, then the yearly proportion applies to all ages
+      S1tab$rho_a[S1tab$year==yy] = rep(obj_rho, length( S1tab$rho_a[S1tab$year==yy]) )
+    } else {
+      opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
+                  tab = dt,
+                  obj_delta,
+                  obj_rho = obj_rho,
+                  coef_delta= coef_delta,
+                  coef_rho= coef_rho )
+      rho_a = opt$par[1]*dt$age+opt$par[2]
+      S1tab$rho_a[S1tab$year==yy] =rho_a
+      
     }
-    
-    #####
-    #  2) allocates the aggregated volume of walking across ages
-    acti =  exp_acti %>% filter(type == "walk")
-    target = target_distri %>% filter(type == "walk")
-    
-    # 2.1) in S1, the scenario assessed, calculate the km_w per person
-    S1tab = df_demo %>% filter(sexe == "Both")
-    S1tab = S1tab %>% arrange(year)
-    S1tab$rho_w = as.numeric(target$rho[match(S1tab$age, target$age)])
-    S1tab$total_km_y_w = acti$total_km_y[match(S1tab$year, acti$year)]
-    
-    # 2.2) creat sum(rho*pop) for each year
-    tmp = S1tab %>% group_by(year) %>% 
-      mutate(rho_pop = rho_w*pop,
-             sum_rho_pop = sum(rho_pop))
-    sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-    S1tab$km_pp_y_walk = S1tab$total_km_y_w*S1tab$rho_w/sum_rho_pop
-    
-
-    #####
-    # 3) allocates the global (ie cycling + eBike) volume of cycling across ages
-    acti =  exp_acti %>% filter(type == "tot_cycle")
-    target = target_distri %>% filter(type == "cycle")
-    
-    # 3.1) in S1, the scenario assessed, calculate the km_w per person
-    S1tab$rho_bike = as.numeric(target$rho[match(S1tab$age, target$age)])
-    S1tab$total_km_y_bike = acti$total_km_y[match(S1tab$year, acti$year)]
-    
-    # 3.2) creat sum(rho*pop) for each year
-    tmp = S1tab %>% group_by(year) %>% 
-      mutate(rho_pop = rho_bike*pop,
-             sum_rho_pop = sum(rho_pop))
-    sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
-    S1tab$km_pp_y_bike = S1tab$total_km_y_bike*S1tab$rho_bike/sum_rho_pop
-    
-   
-    #####
-    # 4) allocate km_cycle btw cycle and eBike to allow delta_age
-    S1tab$rho_a = NA
-    for (i in 1: length(unique(S1tab$year))){
-      yy = unique(S1tab$year)[i]
-        
-      dt = S1tab %>% 
-        filter(year == yy) 
-      
-      obj_rho = as.numeric(prop.eBike_year[prop.eBike_year$year==yy, "prop"])
-      
-      if(obj_delta == 0){ # if we assume no age difference, then the yearly proportion applies to all ages
-        S1tab$rho_a[S1tab$year==yy] = rep(obj_rho, length( S1tab$rho_a[S1tab$year==yy]) )
-      } else {
-            opt = optim(par = c(0.009, -0.03), fn = optimize_rho_a,
-                            tab = dt,
-                            obj_delta,
-                            obj_rho = obj_rho,
-                            coef_delta= coef_delta,
-                            coef_rho= coef_rho )
-            rho_a = opt$par[1]*dt$age+opt$par[2]
-            S1tab$rho_a[S1tab$year==yy] =rho_a
-          
-          }
-      }
-    S1tab$km_pp_y_classical = S1tab$km_pp_y_bike*(1-S1tab$rho_a)
-    S1tab$km_pp_y_eCycle = S1tab$km_pp_y_bike*S1tab$rho_a
-
-    S1tab = S1tab %>% 
-      select(age, year, pop, deaths, MR, age_grp, yll, 
-             km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle) %>% 
-      pivot_longer(c(km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle), 
-                   names_to = "type",
-                   values_to = "km_pp_y") 
-    S1tab$type <- factor(S1tab$type, levels=c("km_pp_y_walk","km_pp_y_classical","km_pp_y_eCycle"), 
-                            labels=c("Walk","Bike", "E-bike" ))
-    
-    return(S1tab)
+  }
+  S1tab$km_pp_y_classical = S1tab$km_pp_y_bike*(1-S1tab$rho_a)
+  S1tab$km_pp_y_eCycle = S1tab$km_pp_y_bike*S1tab$rho_a
+  
+  S1tab = S1tab %>% 
+    select(age, year, pop, deaths, MR, age_grp, yll, 
+           km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle) %>% 
+    pivot_longer(c(km_pp_y_walk, km_pp_y_classical, km_pp_y_eCycle), 
+                 names_to = "type",
+                 values_to = "km_pp_y") 
+  S1tab$type <- factor(S1tab$type, levels=c("km_pp_y_walk","km_pp_y_classical","km_pp_y_eCycle"), 
+                       labels=c("Walk","Bike", "E-bike" ))
+  
+  return(S1tab)
 }
-  
 
-  
+
+
 impact_all_types = function(df_demo= INSEE_data, # demographic data frame
-                               df_acti= nw_data, # data frame of aggregated active transport volume
-                               target_distri=den, # data frame with the target age-distribution of physical activity
-                               walk_speed=4.8,
-                               cycle_speed = 14,
-                               eCycle_speed = 18,
-                               obj_delta = 6.7, #targeted age diff btw classical and eBike users
-                               coef_delta = 1, #coef to give the relative importance of criteria delta
-                               coef_rho=5,
-                               walk_RR = 0.89,
-                               walk_Ref_volume= 168,
-                               cycle_RR = 0.90, 
-                               cycle_Ref_volume = 100,
-                               eCycle_RR= 0.9224138,
-                               eCycle_Ref_volume =100,
-                               age_min = 20, # minimal age to consider health benefits
-                               age_max = 84){
+                            df_acti= nw_data, # data frame of aggregated active transport volume
+                            target_distri=den, # data frame with the target age-distribution of physical activity
+                            walk_speed=4.8,
+                            cycle_speed = 14,
+                            eCycle_speed = 18,
+                            obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                            coef_delta = 1, #coef to give the relative importance of criteria delta
+                            coef_rho=5,
+                            walk_RR = 0.89,
+                            walk_Ref_volume= 168,
+                            cycle_RR = 0.90, 
+                            cycle_Ref_volume = 100,
+                            eCycle_RR= 0.9224138,
+                            eCycle_Ref_volume =100,
+                            age_min = 20, # minimal age to consider health benefits
+                            age_max = 84){
   
   S1tab = allocate_km_by_age  (df_demo= df_demo, # demographic data frame
-                                  df_acti= df_acti, # data frame of aggregated active transport volume
-                                  target_distri=target_distri, # data frame with the target age-distribution of physical activity
-                                  walk_speed=walk_speed,
-                                  cycle_speed = cycle_speed,
-                                  eCycle_speed = eCycle_speed,
-                                  obj_delta = obj_delta, #targeted age diff btw classical and eBike users
-                                  coef_delta = coef_delta, #coef to give the relative importance of criteria delta
-                                  coef_rho=coef_rho)
+                               df_acti= df_acti, # data frame of aggregated active transport volume
+                               target_distri=target_distri, # data frame with the target age-distribution of physical activity
+                               walk_speed=walk_speed,
+                               cycle_speed = cycle_speed,
+                               eCycle_speed = eCycle_speed,
+                               obj_delta = obj_delta, #targeted age diff btw classical and eBike users
+                               coef_delta = coef_delta, #coef to give the relative importance of criteria delta
+                               coef_rho=coef_rho)
   S1tab = S1tab %>% 
     mutate(speed = case_when(type == "Walk" ~ walk_speed,
-                              type == "Bike" ~ cycle_speed,
-                              type == "E-bike" ~ eCycle_speed),
+                             type == "Bike" ~ cycle_speed,
+                             type == "E-bike" ~ eCycle_speed),
            RR = case_when(type == "Walk" ~ walk_RR,
                           type == "Bike" ~ cycle_RR,
                           type == "E-bike" ~ eCycle_RR),
            Ref_volume = case_when(type == "Walk" ~ walk_Ref_volume,
-                          type == "Bike" ~ cycle_Ref_volume,
-                          type == "E-bike" ~ eCycle_Ref_volume)) %>% 
+                                  type == "Bike" ~ cycle_Ref_volume,
+                                  type == "E-bike" ~ eCycle_Ref_volume)) %>% 
     mutate(minute_pp_w = (60*km_pp_y /speed) / (365.25/7))
   
   ####### 
@@ -432,9 +571,9 @@ impact_all_types = function(df_demo= INSEE_data, # demographic data frame
             life_exp = life_exp)
   
   return(li)
-
+  
 }
-                               
+
 
 
 #########################################
@@ -486,29 +625,29 @@ plot_evo_milage = function(evo, y_vec = c(2021, 2030, 2040, 2050), age_low = 14,
 # for sensitivity analysis
 
 agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
-                     df_acti= nw_data, # data frame of aggregated active transport volume
-                     target_distri=den, # data frame with the target age-distribution of physical activity
-                     walk_speed=4.8,
-                     cycle_speed = 14.9,
-                     eCycle_speed = 18.1,
-                     obj_delta = 6.7, #targeted age diff btw classical and eBike users
-                     coef_delta = 1, #coef to give the relative importance of criteria delta
-                     coef_rho=5,
-                     walk_RR = 0.89,
-                     walk_RR_low = 0.96,
-                     walk_RR_sup = 0.83,
-                     walk_Ref_volume= 168,
-                     cycle_RR = 0.90, 
-                     cycle_RR_low = 0.94, 
-                     cycle_RR_sup = 0.87, 
-                     cycle_Ref_volume = 100,
-                     eCycle_RR= 0.91,
-                     eCycle_RR_low= 0.946,
-                     eCycle_RR_sup= 0.883,
-                     eCycle_Ref_volume =100,
-                     age_min = 20, # minimal age to consider health benefits
-                     age_max = 84,
-                     year_output = 2045){
+                         df_acti= nw_data, # data frame of aggregated active transport volume
+                         target_distri=den, # data frame with the target age-distribution of physical activity
+                         walk_speed=4.8,
+                         cycle_speed = 14.9,
+                         eCycle_speed = 18.1,
+                         obj_delta = 6.7, #targeted age diff btw classical and eBike users
+                         coef_delta = 1, #coef to give the relative importance of criteria delta
+                         coef_rho=5,
+                         walk_RR = 0.89,
+                         walk_RR_low = 0.96,
+                         walk_RR_sup = 0.83,
+                         walk_Ref_volume= 168,
+                         cycle_RR = 0.90, 
+                         cycle_RR_low = 0.94, 
+                         cycle_RR_sup = 0.87, 
+                         cycle_Ref_volume = 100,
+                         eCycle_RR= 0.91,
+                         eCycle_RR_low= 0.946,
+                         eCycle_RR_sup= 0.883,
+                         eCycle_Ref_volume =100,
+                         age_min = 20, # minimal age to consider health benefits
+                         age_max = 84,
+                         year_output = 2045){
   # function returning aggregated impact estimates + IC
   imp_central = impact_all_types(df_demo, df_acti, target_distri, 
                                  walk_speed, cycle_speed, eCycle_speed, 
@@ -524,7 +663,7 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
                              cycle_RR = cycle_RR_low, cycle_Ref_volume,
                              eCycle_RR = eCycle_RR_low, eCycle_Ref_volume,
                              age_min,age_max)
-    
+  
   imp_sup = impact_all_types(df_demo, df_acti, target_distri, 
                              walk_speed, cycle_speed, eCycle_speed, 
                              obj_delta, coef_delta, coef_rho,
@@ -556,13 +695,13 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
   
   # deaths prevented
   print(paste0("Annual # death prevented, year=", year_output, ": ",
-    round(res_per_year_group$death_prev[res_per_year_group$year==year_output]),
-    " [",
-    round(res_per_year_group$death_prev_low[res_per_year_group$year==year_output]),
-    "-",
-    round(res_per_year_group$death_prev_sup[res_per_year_group$year==year_output]),
-    "]"
-               ))
+               round(res_per_year_group$death_prev[res_per_year_group$year==year_output]),
+               " [",
+               round(res_per_year_group$death_prev_low[res_per_year_group$year==year_output]),
+               "-",
+               round(res_per_year_group$death_prev_sup[res_per_year_group$year==year_output]),
+               "]"
+  ))
   print(paste0("Cumulative # death prevented (thousand), 2021-2050: ",
                round(sum(res_per_year_group$death_prev)/1000),
                " [",
@@ -609,11 +748,11 @@ agg_impact_IC = function(df_demo= INSEE_data, # demographic data frame
   ))
   # gain in life exp
   print(paste0("Gain in life expectancy, year=", year_output, ": ",
-            round(12*imp_central$life_exp$gain[imp_central$life_exp$year ==year_output ],2),
-            " [",
-            round(12*imp_low$life_exp$gain[imp_low$life_exp$year ==year_output ],2),
-            "-",
-            round(12*imp_sup$life_exp$gain[imp_sup$life_exp$year ==year_output ],2),
-            "]"
+               round(12*imp_central$life_exp$gain[imp_central$life_exp$year ==year_output ],2),
+               " [",
+               round(12*imp_low$life_exp$gain[imp_low$life_exp$year ==year_output ],2),
+               "-",
+               round(12*imp_sup$life_exp$gain[imp_sup$life_exp$year ==year_output ],2),
+               "]"
   ))
 }
