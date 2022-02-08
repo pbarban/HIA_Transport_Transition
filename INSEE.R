@@ -28,16 +28,19 @@ pacman::p_load(dplyr,
 
 INSEE_data <-  download_INSEE(FEC = "bas",
                               ESP = "cent",
-                              MIG = "cent") %>% 
+                              MIG = "cent",
+                              year_limit = 2050) %>% 
   group_by(sexe, year) %>%
   mutate(p_tot =sum(pop),
          p_prop = pop/p_tot,
          MR = MR /10000) %>% 
   filter(year>=2021) %>% 
-  arrange(age, .by_group = T) %>% 
+  arrange(age, .by_group = T)%>% 
   life_exp(MR,age)%>% 
   mutate(yll = life_exp - age,
-         year = as.numeric(year)) %>% 
+         year = as.numeric(year),
+         age_grp = age_grp(age)) %>% 
+  filter(age <= 100) %>% 
   ungroup()
 
 INSEE_data %>% 
@@ -49,8 +52,6 @@ INSEE_data %>%
                 group = sexe,
                 color = sexe ))+
   theme(axis.text.x = element_text(angle = 90))
-
-
 
 
 
@@ -81,5 +82,5 @@ INSEE_data %>%
 
 
 
-rm(Pop.proj, Mortality.rate, All_data)
+#rm(Pop.proj, Mortality.rate, All_data)
 

@@ -18,7 +18,9 @@ test_fun = function(x) {
 
 download_INSEE <- function(FEC = "bas",
                            ESP = "cent",
-                           MIG = "cent"){
+                           MIG = "cent",
+                           age_limit,
+                           year_limit){
   
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(readxl,
@@ -147,7 +149,17 @@ download_INSEE <- function(FEC = "bas",
   
   
   all_data <- merge(all_data, all_data_MR, by = c("age", "year","sexe")) %>% 
-    mutate(MR_manual = deaths/pop)
+    mutate(MR_manual = deaths/pop) 
+  
+  if(missing(year_limit) == F){
+    all_data <- all_data %>% 
+      filter(year <= year_limit)
+  }
+  
+  #if(missing(age_limit) == F){
+  #  all_data <- all_data %>% 
+  #    filter(age <= age_limit)
+  #}
   
   return(all_data)
 }
