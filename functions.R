@@ -344,14 +344,14 @@ optimize_rho_a = function(par = c(a, b), tab,
   rho_a_km_a_classical = tab$km_y_a*(1-tab$rho_a) # sum of km classical bike
   
   # mean ages
-  age_mean_ebike = sum(a_rho_a_km_a_ebike)/sum(rho_a_km_a_ebike) 
-  age_mean_classical = sum(a_rho_a_km_a_classical) / sum(rho_a_km_a_classical)
+  age_mean_ebike = sum(a_rho_a_km_a_ebike, na.rm=T)/sum(rho_a_km_a_ebike, na.rm=T) 
+  age_mean_classical = sum(a_rho_a_km_a_classical, na.rm=T) / sum(rho_a_km_a_classical, na.rm=T)
   #age_mean_classical[age_mean_classical==0] = 14 # to avoid the algo set it to zero
   
   delta = age_mean_ebike - age_mean_classical # this is my first optim criteria
   
   # now recalculate the global rho obtaines (ie. prop eBik)
-  rho = sum( tab$km_y_a *tab$rho_a) / sum(tab$km_y_a)
+  rho = sum( tab$km_y_a *tab$rho_a, na.rm=T) / sum(tab$km_y_a, na.rm=T)
   
   # calculate the value to obtimize = distance
   distance = coef_rho*( (rho -obj_rho)^2  /obj_rho) +
@@ -410,7 +410,7 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
   # 2.2) creat sum(rho*pop) for each year
   tmp = S1tab %>% group_by(year) %>% 
     mutate(rho_pop = rho_w*pop,
-           sum_rho_pop = sum(rho_pop))
+           sum_rho_pop = sum(rho_pop, na.rm=T))
   sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
   S1tab$km_pp_y_walk = S1tab$total_km_y_w*S1tab$rho_w/sum_rho_pop
   
@@ -427,7 +427,7 @@ allocate_km_by_age =function(df_demo= INSEE_data, # demographic data frame
   # 3.2) creat sum(rho*pop) for each year
   tmp = S1tab %>% group_by(year) %>% 
     mutate(rho_pop = rho_bike*pop,
-           sum_rho_pop = sum(rho_pop))
+           sum_rho_pop = sum(rho_pop, na.rm=T))
   sum_rho_pop = tmp$sum_rho_pop[match(S1tab$year, tmp$year)] ; rm(tmp)       
   S1tab$km_pp_y_bike = S1tab$total_km_y_bike*S1tab$rho_bike/sum_rho_pop
   
