@@ -214,7 +214,7 @@ perc_overall_Ebike_yll = sum(impact_per_type$yll_tot[impact_per_type$type == "E-
 
 deathprer_type = ggplot(data=impact_per_type)+
   geom_bar(aes(x = year, y = n_tot, fill = type),stat = "identity") +
-  ylab("Deaths prevented")+
+  ylab("Premature deaths prevented")+
   xlab("")+
   theme_minimal()
 plot(deathprer_type)
@@ -274,7 +274,7 @@ p_evo_ecycle
 
 p2 = ggarrange(p_evo_walk, p_evo_totcycle, p_evo_cycle, p_evo_ecycle,
                labels = c("A: Walk", "B: Total bike", "C: Bike", "D: E-bike"),
-               label.x = 0.74,
+               label.x = 0.8,hjust=0,
                ncol = 1)
 
 tiff("evolution volumes per age.tiff", units="in", width = 5*1.4, height= 8*1.4, res=190)
@@ -462,7 +462,7 @@ evo_res_per_year = res_per_year %>%
 y_vec_3 = c(2025, 2035, 2045)
 age_low = 14
 age_sup = 84
-scale_y_lab = "death prevented"
+scale_y_lab = "Premature death prevented"
 evo = evo_res_per_year[evo_res_per_year$year %in% y_vec_3, ] %>% 
   filter (order>age_low & order<=age_sup) %>% 
   ungroup()
@@ -474,10 +474,10 @@ plot_death_age = ggplot(data = evo,
                         aes(x=age_grp, y = death_prev, fill = year, ymin = death_prev_low, ymax = death_prev_sup)) +
   geom_bar(position = position_dodge(), stat = "identity", width=0.7) + 
   geom_errorbar( position = position_dodge(width = 0.7), colour="black", width=0.4)+
-  scale_y_continuous(name = "Deaths prevented")  +
+  scale_y_continuous(name = "Premature deaths prevented")  +
   theme_minimal() +
   xlab("") +
-  ylab("Deaths prevented") +
+  ylab("Premature deaths prevented") +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
         text = element_text(size = 15),
