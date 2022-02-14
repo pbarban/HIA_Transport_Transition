@@ -233,8 +233,18 @@ dev.off()
 
 
 
-
-
+#### output contribution of age groups to global mileage
+tab = res$S1 %>% 
+  filter(year == 2045) %>% 
+   mutate(km_age_group = pop*km_pp_y) %>% 
+  group_by(age_grp, type) %>% 
+  summarise(sum_km = sum(km_age_group))
+  
+tot_km = sum(tab$sum_km)
+tot_older = tab[tab$age_grp %in% c("70-74", "75-79"),] ; dim(tot_older)
+sum_older = sum(tot_older$sum_km)
+sum_older / tot_km
+  
 #########################################
 ####### plot the evolution of mileage
 #########################################
@@ -458,7 +468,6 @@ evo_res_per_year = res_per_year %>%
             yll_sup = sum(yll_sup))
 
 
-
 y_vec_3 = c(2025, 2035, 2045)
 age_low = 14
 age_sup = 84
@@ -468,7 +477,8 @@ evo = evo_res_per_year[evo_res_per_year$year %in% y_vec_3, ] %>%
   ungroup()
 evo$year = as.factor(evo$year)
 
-
+## output the contrib of 70-79y
+sum(evo$death_prev[evo$year == 2045] )
 
 plot_death_age = ggplot(data = evo, 
                         aes(x=age_grp, y = death_prev, fill = year, ymin = death_prev_low, ymax = death_prev_sup)) +
