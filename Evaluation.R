@@ -5,6 +5,9 @@ source("Denmark_data.R")
 source("INSEE.R")
 source("negaWatt_data.R")
 source("functions.R")
+install.packages("ggbreak")
+library(ggbreak)
+
 
 
 #############################################################################################
@@ -75,9 +78,8 @@ p1 = nw_data2 %>%
   geom_line(aes(x = year, y = value/(365.25/7), group = type, col = type, linetype=type, size= type))+
   ylab("km/inhab/week") +
   xlab("") +
- # labs(title = "Trends in active transportation mileage, negaWatt scenario") +
- # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
-  theme_minimal() +
+  scale_y_break(breaks=c(20,140),scales = "free")+
+  theme_minimal()+
   theme(plot.title = element_text(face = "bold", size = 16),
         plot.subtitle = element_text(colour = "#595a5c", size = 12),
         legend.position="top",
@@ -86,11 +88,10 @@ p1 = nw_data2 %>%
         axis.text=element_text(size=12),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
   scale_linetype_manual(values=c("solid", "solid", "solid","dashed", "dashed"))+
-  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
-  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))+
-  scale_y_continuous(trans= scales::log10_trans())
-  
-plot(p1)
+  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99"))+
+  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))
+p1
+ggsave("Trends_mileage-SnW.jpeg", units="in", width = 9*1.4, height= 5*1.4, dpi=300)
 
 tiff("Trends_mileage-SnW.tiff", units="in", width = 9*1.4, height= 5*1.4, res=190)
 plot(p1)
@@ -101,9 +102,8 @@ p2 = nw_data2 %>%
   geom_line(aes(x = year, y = min_pp_w, group = type, col = type, linetype=type, size= type))+
   ylab("min/inhab/week") +
   xlab("") +
-  #labs(title = "Trends in active transportation duration, negaWatt scenario") +
-  # labs(title = "Tendances dans les transports actifs, scénario negaWatt", subtitle = "En km/semaine/hab") +
-  theme_minimal() +
+  scale_y_break(breaks=c(100,400),scales = "free")+
+  theme_minimal()+
   theme(plot.title = element_text(face = "bold", size = 16),
         plot.subtitle = element_text(colour = "#595a5c", size = 12),
         legend.position="top",
@@ -112,11 +112,9 @@ p2 = nw_data2 %>%
         axis.text=element_text(size=12),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
   scale_linetype_manual(values=c("solid", "solid", "solid","dashed", "dashed"))+
-  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
-  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))+
-  scale_y_continuous(trans= scales::log10_trans())
-
-plot(p2)
+  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99"))+
+  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))
+p2
 
 P1et2 = ggarrange(p1, p2, ncol = 2)
 tiff("evolution in km and min.tiff", units="in", width = 5*2.2, height= 2.5*2.2, res=190)
