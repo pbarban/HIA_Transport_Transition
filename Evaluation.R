@@ -56,14 +56,15 @@ prop.eBike_year =prop.eBike_year %>%
 
 str(nw_data)
 nw_data2 = nw_data
-nw_data2$type <- factor(nw_data$type, levels=c("walk","tot_cycle","cycle", "e_cycle"), 
-                        labels=c("Walk", "Total cycle","Bike", "E-bike" ))
+nw_data2$type <- factor(nw_data$type, levels=c("cars","walk","tot_cycle","cycle", "e_cycle"), 
+                        labels=c("Cars","Walk", "Total cycle","Bike", "E-bike" ))
 #nw_data2 = nw_data2 %>%  filter(year>2021)
 # labels=c("Marche", "Total vélo","vélo", "VAE" ))
 nw_data2 = nw_data2 %>% 
   mutate(speed = case_when(type == "Walk" ~ walk_speed,
                     type == "Bike" ~ cycle_speed,
-                    type == "E-bike" ~ eCycle_speed))
+                    type == "E-bike" ~ eCycle_speed,
+                    type == "Cars" ~ eCycle_speed))
 nw_data2$speed[is.na(nw_data2$speed)] =   prop.eBike_year$average_speed
 nw_data2 = nw_data2 %>% 
   mutate(min_pp_w = (60*value/speed) /(365.25/7),
@@ -84,9 +85,10 @@ p1 = nw_data2 %>%
         legend.text = element_text(size=12),
         axis.text=element_text(size=12),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
-  scale_linetype_manual(values=c("solid", "solid","dashed", "dashed"))+
-  scale_color_manual(values=c("#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
-  scale_size_manual(values = c(1.5,1.5, 1, 1))
+  scale_linetype_manual(values=c("solid", "solid", "solid","dashed", "dashed"))+
+  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
+  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))+
+  scale_y_continuous(trans= scales::log10_trans())
   
 plot(p1)
 
@@ -109,9 +111,10 @@ p2 = nw_data2 %>%
         legend.text = element_text(size=12),
         axis.text=element_text(size=12),
         axis.text.x = element_text(angle = 60, vjust = 0.5, hjust=1))+
-  scale_linetype_manual(values=c("solid", "solid","dashed", "dashed"))+
-  scale_color_manual(values=c("#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
-  scale_size_manual(values = c(1.5,1.5, 1, 1))
+  scale_linetype_manual(values=c("solid", "solid", "solid","dashed", "dashed"))+
+  scale_color_manual(values=c("#808080","#1f78b4", "#b2df8a", "#33a02c", "#fb9a99")) +
+  scale_size_manual(values = c(1.5,1.5,1.5, 1, 1))+
+  scale_y_continuous(trans= scales::log10_trans())
 
 plot(p2)
 

@@ -2,8 +2,14 @@ pacman::p_load(readr,
                dplyr,
                tidyr)
 
-raw_data <- read_csv2(file = "nw_data_v2.csv",show_col_types = FALSE,  col_names = c("type" ,paste0("year_",rep(2015:2050)))) %>%
+raw_data <- read_csv2(file = "nw_data_v2.csv",show_col_types = FALSE ,col_names = c("type" ,paste0("year_",rep(2015:2050)))) %>%
   mutate(across(everything(), as.character)) 
+
+
+library(readr)
+raw_data <- read_csv("nw_data_v3.csv", col_names = c("type" ,paste0("year_",rep(2015:2050))))%>%
+  mutate(across(everything(), as.character)) 
+View(nw_data_v3)
 
 
 #########################
@@ -21,9 +27,10 @@ nw_data = raw_data %>%
   pivot_wider(names_from = "type", values_from = "value") %>% 
   mutate(walk = as.numeric(Marche),
          all_cycle = as.numeric(Velo),
-         e_cycle = all_cycle * as.numeric(gsub("%", "", VAE))/100,
-         cycle = all_cycle - e_cycle) %>% 
-  select(-c(Marche, Velo, VAE, all_cycle)) %>% 
+         e_cycle = all_cycle * as.numeric(VAE),
+         cycle = all_cycle - e_cycle,
+         cars = as.numeric(Voiture)) %>% 
+  select(-c(Marche, Velo, VAE, all_cycle,Voiture)) %>% 
   pivot_longer(!year, names_to = "type", values_to = "value")%>% 
   mutate(year = as.numeric(sub("year_", "", year)),
           value = as.numeric(value)) %>% 
@@ -31,7 +38,7 @@ nw_data = raw_data %>%
 
 
 # add a category for total cycling
-tot_cycle_lines = nw_data %>% filter(type != "walk") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "tot_cycle")
+tot_cycle_lines = nw_data %>% filter(type != "walk" & type != "cars") %>%  group_by(year) %>% summarise(value = sum(value)) %>% ungroup() %>% mutate(type = "tot_cycle")
 nw_data = bind_rows(nw_data, tot_cycle_lines) %>% arrange(year)
 
 rm(raw_data)
